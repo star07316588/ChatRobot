@@ -43,5 +43,52 @@ namespace MesTAManagementSystem_New.Services
         {
             return _repo.UpdateQuestion(tableName, vm);
         }
+
+public class CertInfo
+{
+    public string CerId { get; set; }
+    public string CerDate { get; set; }
+}
+
+public class CertRegisterVM
+{
+    public string CerId { get; set; }
+    public string EmpId { get; set; }
+    public string CerDate { get; set; }
+    public string CertItemId { get; set; }
+    public string ScoreWR { get; set; }
+    public string ScoreOP { get; set; }
+    public string CreateUser { get; set; }
+}
+
+public class TestingService
+{
+    private readonly TestingRepository _repo = new TestingRepository();
+
+    public CertInfo GetCertificateByCerItemId(string cerItemId, string role, string month)
+    {
+        return _repo.FetchValidCertificate(cerItemId, role, month);
+    }
+
+    public bool IsDuplicateRegistration(string cerId, string cerDate, string empId, string cerItemId)
+    {
+        return _repo.CheckDuplicate(cerId, cerDate, empId, cerItemId);
+    }
+
+    public bool HasTrainingRecordInThreeMonths(string empId, string cerItemId)
+    {
+        return _repo.HasRecentTraining(empId, cerItemId);
+    }
+
+    public string GetExamType(string certItemId)
+    {
+        return _repo.GetExamType(certItemId);
+    }
+
+    public void InsertRegistration(CertRegisterVM vm)
+    {
+        _repo.InsertRegistration(vm);
+    }
+}
     }
 }
