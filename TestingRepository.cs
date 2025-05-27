@@ -186,5 +186,39 @@ namespace MesTAManagementSystem_New.Repositories
             }
             return result;
         }
+
+public void BackupCerReg(string cerRegNo, string userId)
+{
+    using (IDbConnection conn = new OracleConnection(AppConfig.ConnectString))
+    {
+        conn.Open();
+        string sql = @"
+            INSERT INTO sbl_cer_reg_delete (
+                CER_REG_NO, CER_ID, EMP_ID, REG_DATE, SCORE_WRITING, SCORE_OPER, OPER_FAIL,
+                CER_DATE, GRADE, TESTER, CRT_USER, CRT_DATE, UPT_USER, UPT_DATE,
+                DLT_USER, DLT_DATE, CER_ITEM_ID, RETEST_NO, DATE_SET, WR_DATE,
+                OP_DATE, WR_FILE, OP_FILE
+            )
+            SELECT
+                CER_REG_NO, CER_ID, EMP_ID, REG_DATE, SCORE_WRITING, SCORE_OPER, OPER_FAIL,
+                CER_DATE, GRADE, TESTER, CRT_USER, CRT_DATE, UPT_USER, UPT_DATE,
+                :UserId, SYSDATE, CER_ITEM_ID, RETEST_NO, DATE_SET, WR_DATE,
+                OP_DATE, WR_FILE, OP_FILE
+            FROM sbl_cer_reg
+            WHERE cer_reg_no = :CerRegNo";
+
+        conn.Execute(sql, new { CerRegNo = cerRegNo, UserId = userId });
+    }
+}
+
+public void DeleteCerReg(string cerRegNo, string userId)
+{
+    using (IDbConnection conn = new OracleConnection(AppConfig.ConnectString))
+    {
+        conn.Open();
+        string sql = "DELETE FROM sbl_cer_reg WHERE cer_reg_no = :CerRegNo";
+        conn.Execute(sql, new { CerRegNo = cerRegNo });
+    }
+}
     }
 }
