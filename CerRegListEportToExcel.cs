@@ -1,7 +1,13 @@
+你要設定下載的 Excel 檔名為 TestingEmployee_yyyymmddhhmissfff.xls（非 .xml，若為 Excel 檔應為 .xls），以下是修改後的 Controller ExportToExcel 實作：
+
+
+---
+
+✅ Controller：加入動態檔名設定
+
 [HttpPost]
 public ActionResult ExportToExcel(CerRegListVM vm)
 {
-    // 查詢要匯出的資料
     var list = _TestingService.GetEmployeeList(vm.EmpId, vm.StationId, vm.CertItemId, vm.Month, vm.SortType);
 
     var sb = new System.Text.StringBuilder();
@@ -22,5 +28,34 @@ public ActionResult ExportToExcel(CerRegListVM vm)
 
     sb.AppendLine("</table>");
 
-    return Content(sb.ToString(), "application/vnd.ms-excel", System.Text.Encoding.UTF8);
+    string filename = $"TestingEmployee_{DateTime.Now:yyyyMMddHHmmssfff}.xls";
+
+    Response.ClearContent();
+    Response.Buffer = true;
+    Response.AddHeader("content-disposition", $"attachment; filename={filename}");
+    Response.ContentType = "application/vnd.ms-excel";
+    Response.Charset = "";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Write(sb.ToString());
+    Response.End();
+
+    return new EmptyResult();
 }
+
+
+---
+
+✅ 輸出特點：
+
+匯出為 Excel .xls（可用舊版 Excel 開啟）
+
+檔名為 TestingEmployee_20250522123045888.xls 格式
+
+不需外掛程式或元件
+
+
+
+---
+
+是否想改為 xlsx 檔（需 EPPlus），或增加篩選條件、Excel 標題、匯出全欄寬等？我也可以幫你做。要進階優化嗎？
+
