@@ -1,0 +1,146 @@
+@model MesTAManagementSystem_New.ViewModels.Training.Testing.CerRegListVM
+@using System.Web
+@using System.Collections
+@{
+
+    ViewBag.Title = "Certificate Testing List Maintain(鑑定考試名單維護)";
+    Layout = "~/Views/Shared/_LayoutMain.cshtml";
+    var ErrorMessage = TempData["ErrorMessage"];
+}
+@section styles
+{
+    <link rel="stylesheet" href="~/Content/ses.css">
+}
+@{
+    <script>
+        function getStationId() {
+            var stationId = $('#station_id').val();
+            if (stationId) {
+                $.ajax({
+                    url: '@Url.Action("GetCerItemIdList", "Question")',
+                    type: 'GET',
+                    data: { stationId: stationId },
+                    success: function (data) {
+                        var $certItemSelect = $('#CertItemId');
+                        $certItemSelect.empty(); // 先清空舊資料
+
+                        if (data.length > 0) {
+                            $certItemSelect.append($('<option>').val('').text('請選擇'));
+                            $.each(data, function (index, item) {
+                                $certItemSelect.append($('<option>').val(item.Value).text(item.Text));
+                            });
+                        } else {
+                            $certItemSelect.append($('<option>').val('').text('無'));
+                        }
+                    },
+                    error: function () {
+                        alert('取得資料失敗');
+                    }
+                });
+            }
+        }
+
+        function setFormAction(actionName) {
+            var form = document.getElementById('uploadForm');
+            form.action = '/' + 'CerRegList' + '/' + actionName; // 產生 /Question/Preview 或 /Question/Upload
+        }
+    </script>
+}
+@if (ErrorMessage != null)
+{
+    <script type="text/javascript">
+        alert('@ErrorMessage.ToString()');
+    </script>
+}
+
+<div class="page-container">
+    <table>
+        <tr>
+            <td><img src="~/Content/images/title-blank.jpg" /></td>
+            <td class="title">鑑定考試名單維護</td>
+        </tr>
+    </table>
+    <form class="query-form" id="uploadForm" method="post" enctype="multipart/form-data" asp-controller="CerRegList" onsubmit="return check(this)">
+        <div class="display-flex">
+            <label>員工編號：</label>
+            <input type="text" name="EmpId" value="@Model.EmpId" />
+        </div>
+        <div class="display-flex">
+            <label>站別：</label>
+            @Html.DropDownListFor(model => model.StationId,
+                      Model.StationOptions,
+                      "請選擇",
+                      new { @id = "station_id", onchange = "getStationId()" })
+        </div>
+        <div class="display-flex">
+            <label>鑑定項目：</label>
+            @Html.DropDownListFor(model => model.CertItemId,
+                       Model.CerItemOptions,
+                       "請選擇",
+                       new { @class = "form-control input-xs" })
+        </div>
+        <div class="display-flex">
+            <label>月份：</label>
+            <select id="month" name="month">
+                <option value="this_month">這個月</option>
+                <option value="next_month">下個月</option>
+            </select>
+        </div>
+        <div class="display-flex">
+            <label>排序方式：</label>
+            <select name="SortType">
+                <option value="">--請選擇--</option>
+                <option value="SortByDept">依部門排序</option>
+                <option value="SortByShift">依班別排序</option>
+                <option value="SortByStation">依站別排序</option>
+                <option value="SortByEmpId">依工號排序</option>
+                <option value="SortByName">依姓名排序</option>
+                <option value="SortByCerItemId">依鑑定項目排序</option>
+            </select>
+        </div>
+        <div class="button-group">
+            <button type="submit" name="optBnt" value="add" onclick="setFormAction('Add')">新增</button>
+            <button type="submit" name="optBnt" value="delete" onclick="setFormAction('Delete')">刪除</button>
+            <button type="submit" name="optBnt" value="export">ExportToExcel</button>
+        </div>
+    </form>
+
+    @if (Model.EmployeeList != null && Model.EmployeeList.Any())
+    {
+        <table class="result-table">
+            <thead>
+                <tr>
+                    <th>刪除選項</th>
+                    <th>部門</th>
+                    <th>班別</th>
+                    <th>站別</th>
+                    <th>工號</th>
+                    <th>姓名</th>
+                    <th>鑑定項目</th>
+                    <th>證照編號</th>
+                    <th>鑑定月份</th>
+                    <th>類別</th>
+                    <th>本月</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var emp in Model.EmployeeList)
+                {
+                    <tr>
+                        <td><input type="checkbox" name="DeleteIds" value="@emp.Cer_Item_Id"></td>
+                        <td>@emp.Dept_Id</td>
+                        <td>@emp.Shift_Id</td>
+                        <td>@emp.Station_Id</td>
+                        <td>@emp.Emp_Id</td>
+                        <td>@emp.Name</td>
+                        <td>@emp.Cer_Item_Id</td>
+                        <td>@emp.Cer_Reg_No</td>
+                        <td>@emp.Cer_Date</td>
+                        <td>@emp.Exam_Type</td>
+                        <td>@emp.This_Month</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
