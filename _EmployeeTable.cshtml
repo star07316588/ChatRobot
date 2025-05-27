@@ -1,0 +1,48 @@
+@model List<MesTAManagementSystem_New.Models.CerRegListModel>
+
+<table class="result-table">
+    <thead>
+        <tr>
+            <th>刪除選項</th>
+            <th>部門</th>
+            <th>班別</th>
+            <th>站別</th>
+            <th>工號</th>
+            <th>姓名</th>
+            <th>鑑定項目</th>
+            <th>證照編號</th>
+            <th>鑑定月份</th>
+            <th>類別</th>
+            <th>本月</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var emp in Model)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" name="DeleteIds" value="@emp.Cer_Reg_No" />
+                    </td>
+                    <td>@emp.Dept_Id</td>
+                    <td>@emp.Shift_Id</td>
+                    <td>@emp.Station_Id</td>
+                    <td>@emp.Emp_Id</td>
+                    <td>@emp.Name</td>
+                    <td>@emp.Cer_Item_Id</td>
+                    <td>@emp.Cer_Reg_No</td>
+                    <td>@emp.Cer_Date</td>
+                    <td>@emp.Exam_Type</td>
+                    <td>@emp.This_Month</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="11" style="text-align:center;">查無資料</td>
+            </tr>
+        }
+    </tbody>
+</table>
