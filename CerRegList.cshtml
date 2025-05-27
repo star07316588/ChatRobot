@@ -1,57 +1,81 @@
-@model MesTAManagementSystem_New.ViewModels.Training.Testing.CerRegListVM
-@using System.Web
-@using System.Collections
-@{
+@model MesTAManagementSystem_New.ViewModels.Training.Testing.CerRegListVM @using System.Web @using System.Collections @{ ViewBag.Title = "Certificate Testing List Maintain(鑑定考試名單維護)"; Layout = "~/Views/Shared/_LayoutMain.cshtml"; var ErrorMessage = TempData["ErrorMessage"]; } @section styles { <link rel="stylesheet" href="~/Content/ses.css"> <style> form.query-form { background-color: #f8f8f8; padding: 20px; border-radius: 8px; border: 1px solid #ccc; }
 
-    ViewBag.Title = "Certificate Testing List Maintain(鑑定考試名單維護)";
-    Layout = "~/Views/Shared/_LayoutMain.cshtml";
-    var ErrorMessage = TempData["ErrorMessage"];
-}
-@section styles
-{
-    <link rel="stylesheet" href="~/Content/ses.css">
-}
-@{
-    <script>
-        function getStationId() {
-            var stationId = $('#station_id').val();
-            if (stationId) {
-                $.ajax({
-                    url: '@Url.Action("GetCerItemIdList", "Question")',
-                    type: 'GET',
-                    data: { stationId: stationId },
-                    success: function (data) {
-                        var $certItemSelect = $('#CertItemId');
-                        $certItemSelect.empty(); // 先清空舊資料
+.query-form .display-flex {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        gap: 10px;
+    }
 
-                        if (data.length > 0) {
-                            $certItemSelect.append($('<option>').val('').text('請選擇'));
-                            $.each(data, function (index, item) {
-                                $certItemSelect.append($('<option>').val(item.Value).text(item.Text));
-                            });
-                        } else {
-                            $certItemSelect.append($('<option>').val('').text('無'));
-                        }
-                    },
-                    error: function () {
-                        alert('取得資料失敗');
+    .query-form label {
+        min-width: 100px;
+        font-weight: bold;
+    }
+
+    .query-form input[type="text"],
+    .query-form select {
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        flex: 1;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .result-table {
+        width: 100%;
+        margin-top: 20px;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    .result-table th,
+    .result-table td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: center;
+        word-wrap: break-word;
+    }
+
+    .result-table th {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .result-table tbody tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+</style>
+
+} @{ <script> function getStationId() { var stationId = $('#station_id').val(); if (stationId) { $.ajax({ url: '@Url.Action("GetCerItemIdList", "Question")', type: 'GET', data: { stationId: stationId }, success: function (data) { var $certItemSelect = $('#CertItemId'); $certItemSelect.empty(); // 先清空舊資料
+
+if (data.length > 0) {
+                        $certItemSelect.append($('<option>').val('').text('請選擇'));
+                        $.each(data, function (index, item) {
+                            $certItemSelect.append($('<option>').val(item.Value).text(item.Text));
+                        });
+                    } else {
+                        $certItemSelect.append($('<option>').val('').text('無'));
                     }
-                });
-            }
+                },
+                error: function () {
+                    alert('取得資料失敗');
+                }
+            });
         }
+    }
 
-        function setFormAction(actionName) {
-            var form = document.getElementById('uploadForm');
-            form.action = '/' + 'CerRegList' + '/' + actionName; // 產生 /Question/Preview 或 /Question/Upload
-        }
-    </script>
-}
-@if (ErrorMessage != null)
-{
-    <script type="text/javascript">
-        alert('@ErrorMessage.ToString()');
-    </script>
-}
+    function setFormAction(actionName) {
+        var form = document.getElementById('uploadForm');
+        form.action = '/' + 'CerRegList' + '/' + actionName; // 產生 /CerRegList/Add 或 /CerRegList/Delete
+    }
+</script>
+
+} @if (ErrorMessage != null) { <script type="text/javascript"> alert('@ErrorMessage.ToString()'); </script> }
 
 <div class="page-container">
     <table>
@@ -77,7 +101,7 @@
             @Html.DropDownListFor(model => model.CertItemId,
                        Model.CerItemOptions,
                        "請選擇",
-                       new { @class = "form-control input-xs" })
+                       new { @id = "CertItemId", @class = "form-control input-xs" })
         </div>
         <div class="display-flex">
             <label>月份：</label>
