@@ -1,0 +1,35 @@
+<select id="SortType" name="SortType" onchange="updateSortedTable()">
+    <option value="">--請選擇--</option>
+    <option value="SortByDept">依部門排序</option>
+    <option value="SortByShift">依班別排序</option>
+    <option value="SortByEmpId">依工號排序</option>
+</select>
+
+<div id="tableContainer">
+    @Html.Partial("_EmployeeTable", Model.EmployeeList)
+</div>
+
+<script>
+    function updateSortedTable() {
+        var sort = $('#SortType').val();
+        var empId = $('input[name=EmpId]').val();
+        var stationId = $('#station_id').val();
+        var certItemId = $('#CertItemId').val();
+        var month = $('#month').val();
+
+        $.ajax({
+            url: '@Url.Action("GetSortedTable", "CerRegList")',
+            type: 'GET',
+            data: {
+                empId: empId,
+                stationId: stationId,
+                certItemId: certItemId,
+                month: month,
+                sortType: sort
+            },
+            success: function (html) {
+                $('#tableContainer').html(html);
+            }
+        });
+    }
+</script>
