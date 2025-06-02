@@ -1,0 +1,20 @@
+專案資訊
+專案名稱: MesTAManagementSystem_New
+Controller
+命名空間: MesTAManagementSystem_New.Controllers.Training.Testing
+檔案名稱: OperationScoreController.cs
+Model
+命名空間: MesTAManagementSystem_New.Models.Training.Testing
+檔案名稱: OperationScoreModel.cs
+ViewModel
+命名空間: MesTAManagementSystem_New.ViewModels.Training.Testing
+檔案名稱: OperationScoreVM.cs
+View
+命名空間: MesTAManagementSystem_New.Views.Training.Testing.OperationScore
+檔案名稱: Index.cshtml
+Services
+命名空間: MesTAManagementSystem_New.Services
+檔案名稱: TestingService.cs
+Repositories
+命名空間: MesTAManagementSystem_New.Repositories
+檔案名稱: TestingRepository.cs
