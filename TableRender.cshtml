@@ -1,0 +1,265 @@
+    function chkSelect(obj) {
+        var tbl2 = document.getElementById('tbl2');
+        @if (isQuestionType1)
+        {
+        <text>
+            var txt1 = document.getElementsByName('txt1');
+            var txt1 = document.getElementsByName('txt1');
+            var txt2 = document.getElementsByName('txt2');
+            var txt3 = document.getElementsByName('txt3');
+            var txt4 = document.getElementsByName('txt4');
+            var txt5 = document.getElementsByName('txt5');
+            var txt6 = document.getElementsByName('txt6');
+            var txt7 = document.getElementsByName('txt7');
+            var txt8 = document.getElementsByName('txt8');
+            var txt10 = document.getElementsByName('txt10');
+            var tbl2 = document.getElementById('tbl2');
+            var chk = document.getElementsByName('chk');
+            for (i = tbl2.rows.length - 1; i > 0; i--) {
+                if (chk.item(i - 1).checked == true) {
+                    if (txt1.item(i - 1).value == "1" || txt1.item(i - 1).value == "2") {
+                        txt1.item(i - 1).readOnly = false;
+                        txt1.item(i - 1).className = "inputText";
+                        txt2.item(i - 1).readOnly = false;
+                        txt2.item(i - 1).className = "inputText";
+                        txt3.item(i - 1).readOnly = true;
+                        txt4.item(i - 1).readOnly = false;
+                        txt4.item(i - 1).className = "inputText";
+                        txt5.item(i - 1).readOnly = true;
+                        txt6.item(i - 1).readOnly = false;
+                        txt6.item(i - 1).className = "inputText";
+                        txt7.item(i - 1).readOnly = false;
+                        txt7.item(i - 1).className = "inputText";
+                        txt8.item(i - 1).readOnly = false;
+                        txt8.item(i - 1).className = "inputText";
+                        txt10.item(i - 1).value = "ChkTrue";
+                    }
+                    else {
+                        txt1.item(i - 1).readOnly = false;
+                        txt1.item(i - 1).className = "inputText";
+                        txt2.item(i - 1).readOnly = false;
+                        txt2.item(i - 1).className = "inputText";
+                        txt3.item(i - 1).readOnly = false;
+                        txt3.item(i - 1).className = "inputText";
+                        txt4.item(i - 1).readOnly = false;
+                        txt4.item(i - 1).className = "inputText";
+                        txt5.item(i - 1).readOnly = false;
+                        txt5.item(i - 1).className = "inputText";
+                        txt6.item(i - 1).readOnly = false;
+                        txt6.item(i - 1).className = "inputText";
+                        txt7.item(i - 1).readOnly = false;
+                        txt7.item(i - 1).className = "inputText";
+                        txt8.item(i - 1).readOnly = false;
+                        txt8.item(i - 1).className = "inputText";
+                        txt10.item(i - 1).value = "ChkTrue";
+                    }
+                }
+                else {
+                    txt1.item(i - 1).readOnly = true;
+                    txt1.item(i - 1).className = "readOnlyText";
+                    txt2.item(i - 1).readOnly = true;
+                    txt2.item(i - 1).className = "readOnlyText";
+                    txt3.item(i - 1).readOnly = true;
+                    txt3.item(i - 1).className = "readOnlyText";
+                    txt4.item(i - 1).readOnly = true;
+                    txt4.item(i - 1).className = "readOnlyText";
+                    txt5.item(i - 1).readOnly = true;
+                    txt5.item(i - 1).className = "readOnlyText";
+                    txt6.item(i - 1).readOnly = true;
+                    txt6.item(i - 1).className = "readOnlyText";
+                    txt7.item(i - 1).readOnly = true;
+                    txt7.item(i - 1).className = "readOnlyText";
+                    txt8.item(i - 1).readOnly = true;
+                    txt8.item(i - 1).className = "readOnlyText";
+                    txt10.item(i - 1).value = "";
+                }
+            }
+        </text>
+        }
+        else
+        {
+            <text>
+            var txt1 = document.getElementsByName('txt1');
+            var txt2 = document.getElementsByName('txt2');
+            var txt3 = document.getElementsByName('txt3');
+            var txt4 = document.getElementsByName('txt4');
+            var txt5 = document.getElementsByName('txt5');
+            var txt6 = document.getElementsByName('txt6');
+            var txt10 = document.getElementsByName('txt10');
+            var tbl2 = document.getElementById('tbl2');
+            var chk = document.getElementsByName('chk');
+            for (i = tbl2.rows.length - 1; i > 0; i--) {
+                if (chk.item(i - 1).checked == true) {
+                txt1.item(i - 1).readOnly = false;
+                txt1.item(i - 1).className = "inputText";
+                txt2.item(i - 1).readOnly = false;
+                txt2.item(i - 1).className = "inputText";
+                txt3.item(i - 1).readOnly = false;
+                txt3.item(i - 1).className = "inputText";
+                txt4.item(i - 1).readOnly = false;
+                txt5.item(i - 1).readOnly = false;
+                txt5.item(i - 1).className = "inputText";
+                txt6.item(i - 1).readOnly = false;
+                txt6.item(i - 1).className = "inputText";
+                txt10.item(i - 1).value = "ChkTrue";
+            }
+                        else {
+                txt1.item(i - 1).readOnly = true;
+                txt1.item(i - 1).className = "readOnlyText";
+                txt2.item(i - 1).readOnly = true;
+                txt2.item(i - 1).className = "readOnlyText";
+                txt3.item(i - 1).readOnly = true;
+                txt3.item(i - 1).className = "readOnlyText";
+                txt4.item(i - 1).readOnly = true;
+                txt5.item(i - 1).readOnly = true;
+                txt5.item(i - 1).className = "readOnlyText";
+                txt6.item(i - 1).readOnly = true;
+                txt6.item(i - 1).className = "readOnlyText";
+                txt10.item(i - 1).value = "";
+            }
+        }
+        </text>
+        }
+    }
+    function CheckSubjectNo() {
+        var tbl2 = document.getElementById('tbl2');
+        var chk = document.getElementsByName('chk');
+        var txt5 = document.getElementsByName('txt5');
+        var txt3 = document.getElementsByName('txt3');
+        var txt9 = document.getElementsByName('txt9');
+        for (i = tbl2.rows.length - 1; i > 0; i--) {
+            if (chk.item(i - 1).checked == true) {
+                if (!txt3.item(i - 1).value == "null" || !txt3.item(i - 1).value == "") {
+                    txt5.item(i - 1).readOnly = true;
+                    txt5.item(i - 1).className = "readOnlyText";
+                    txt5.item(i - 1).value = "";
+                    txt9.item(i - 1).readOnly = false;
+                    txt9.item(i - 1).className = "inputText";
+                }
+                else {
+                    txt5.item(i - 1).readOnly = false;
+                    txt5.item(i - 1).className = "inputText";
+                    txt9.item(i - 1).readOnly = true;
+                    txt9.item(i - 1).className = "readOnlyText";
+                }
+
+            }
+        }
+    }
+
+    function CheckSubject() {
+        var tbl2 = document.getElementById('tbl2');
+        var chk = document.getElementsByName('chk');
+        var txt5 = document.getElementsByName('txt5');
+        var txt3 = document.getElementsByName('txt3');
+        var txt9 = document.getElementsByName('txt9');
+        for (i = tbl2.rows.length - 1; i > 0; i--) {
+            if (chk.item(i - 1).checked == true) {
+                if (!txt5.item(i - 1).value == "null" || !txt5.item(i - 1).value == "") {
+                    txt3.item(i - 1).readOnly = true;
+                    txt3.item(i - 1).value = "";
+                    txt3.item(i - 1).className = "readOnlyText";
+                    txt9.item(i - 1).readOnly = true;
+                    txt9.item(i - 1).className = "readOnlyText";
+                }
+                else {
+                    txt3.item(i - 1).readOnly = false;
+                    txt3.item(i - 1).className = "inputText";
+
+                }
+
+            }
+        }
+    }
+    function addQuestion() {
+        var tbl2 = document.getElementById('tbl2');
+        var tr = tbl2.insertRow(tbl2.rows.length);
+        tr.className = "list1";
+        @if (isQuestionType1)
+        {
+            <text>
+            var td = tr.insertCell(tr.cells.length);
+            td.innerHTML = "<input type=checkbox onclick='chkSelect(this.parentNode.parentNode)' name='chk'>";
+            var td = tr.insertCell(tr.cells.length);
+            td.innerHTML = "<input type=text id='txt1' name='txt1' size=1 maxlength='3' readOnly=true >";
+            var td = tr.insertCell(tr.cells.length);
+            td.innerHTML = "<input type=text id='txt2' name='txt2' size=1 maxlength='3' readOnly=true >";
+            var td = tr.insertCell(tr.cells.length);
+            td.innerHTML = "<input type=text id='txt3' name='txt3' size=1 onChange='CheckSubjectNo()' readOnly=true >";
+            var td = tr.insertCell(tr.cells.length);
+            td.innerHTML = "<textarea id='txt4' name='txt4' rows=5 cols=50 readOnly=true ></textarea>";
+            var td = tr.insertCell(tr.cells.length);
+            td.innerHTML = "<input type=text id='txt5' name='txt5' size=15 onChange='CheckSubject()' readOnly=true >";
+            var td = tr.insertCell(tr.cells.length);
+            td.innerHTML = "<input type=text id='txt6' name='txt6' size=1 readOnly=true >";
+            var td = tr.insertCell(tr.cells.length);
+            td.innerHTML = "<input type=text id='txt7' name='txt7' size=5 readOnly=true >";
+            var td = tr.insertCell(tr.cells.length);
+            td.innerHTML = "<input type=text id='txt8' name='txt8' size=1 maxlength='1' readOnly=true >";
+            //var td=tr.insertCell(tr.cells.length);
+            td.innerHTML += "<input type=hidden id='txt9' value='' name='txt9' >";
+            //var td=tr.insertCell(tr.cells.length);
+            td.innerHTML += "<input type=hidden id='txt10' value='' name='txt10' >";
+            //var td=tr.insertCell(tr.cells.length);
+            td.innerHTML += "<input type=hidden id='rowid' value='' name='rowid' >";
+            tr.cells.item(0).childNodes.item(0).checked = true;
+            chkSelect(tr);
+            </text>
+        }
+        else
+        {
+            <text>
+            var td = tr.insertCell(tr.cells.length);
+            td.innerHTML = "<input type=checkbox onclick='chkSelect(this.parentNode.parentNode)' name='chk'>";
+            var td = tr.insertCell(tr.cells.length);
+            td.innerHTML = "<input type=text id='txt1' name='txt1' size=5 maxlength='10' readOnly=true class='readOnlyText'>";
+            var td = tr.insertCell(tr.cells.length);
+            td.innerHTML = "<input type=text id='txt2' name='txt2' size=1 maxlength='3' readOnly=true class='readOnlyText'>";
+            var td = tr.insertCell(tr.cells.length);
+            td.innerHTML = "<input type=text id='txt3' name='txt3' size=5  readOnly=true class='readOnlyText'>";
+            var td = tr.insertCell(tr.cells.length);
+            td.innerHTML = "<textarea id='txt4' name='txt4' rows=5 cols=50 readOnly=true></textarea>";
+            var td = tr.insertCell(tr.cells.length);
+            td.innerHTML = "<input type=text id='txt5' name='txt5' size=5 readOnly=true class='readOnlyText'>";
+            var td = tr.insertCell(tr.cells.length);
+            td.innerHTML = "<input type=text id='txt6' name='txt6' size=1 readOnly=true class='readOnlyText'>";
+            //var td=tr.insertCell(tr.cells.length);
+            td.innerHTML += "<input type=hidden id='txt10' value='' name='txt10' >";
+            //var td=tr.insertCell(tr.cells.length);
+            td.innerHTML += "<input type=hidden id='rowid' value='' name='rowid' >";
+            tr.cells.item(0).childNodes.item(0).checked = true;
+            chkSelect(tr);
+            </text>
+        }
+    }
+
+    function delQuestion() {
+        var tbl2 = document.getElementById('tbl2');
+        var chk = document.getElementsByName('chk');
+        for (i = tbl2.rows.length - 1; i > 0; i--) {
+            if (chk.item(i - 1).checked == true) {
+                chkValue = chkValue + chk.item(i - 1).value + ",";
+                tbl2.deleteRow(i);
+
+            }
+        }
+        document.getElementById("DelRow").value = chkValue;
+    }
+
+    function check() {
+        var flag = true;
+        var tbl2 = document.getElementById('tbl2');
+        var txt3 = document.getElementsByName('txt3');
+        var txt5 = document.getElementsByName('txt5');
+        var chk = document.getElementsByName('chk');
+        for (i = tbl2.rows.length - 1; i > 0; i--) {
+            if (chk.item(i - 1).checked == true) {
+                if (txt5.item(i - 1).value == "null" && txt3.item(i - 1).value != "")
+                    txt5.item(i - 1).value = "";
+                if (txt3.item(i - 1).value == "null" && txt5.item(i - 1).value != "")
+                    txt3.item(i - 1).value = "";
+            }
+
+        }
+        return flag;
+    }
