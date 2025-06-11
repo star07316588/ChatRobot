@@ -24,8 +24,8 @@
                 <tr class="@rowClass">
                     <td>@row.StationId</td>
                     <td>@row.CerItemId</td>
-                    <td>@(row.WRDate?.ToString("yyyy/MM/dd") ?? "")</td>
-                    <td>@(row.OPDate?.ToString("yyyy/MM/dd") ?? "")</td>
+                    <td>@(row.WRDate != null ? row.WRDate.Value.ToString("yyyy/MM/dd") : "")</td>
+                    <td>@(row.OPDate != null ? row.OPDate.Value.ToString("yyyy/MM/dd") : "")</td>
                     <td>@row.ShiftId</td>
                     <td>@row.EmpId</td>
                     <td>@row.Name</td>
