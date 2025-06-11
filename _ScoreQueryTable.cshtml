@@ -1,0 +1,82 @@
+@model IEnumerable<MesTAManagementSystem_New.ViewModels.Training.Testing.ScoreQueryResultVM>
+
+<table class="result-table">
+    <thead>
+        <tr>
+            <th>站別區域<br />Station</th>
+            <th>試題代碼<br />Course</th>
+            <th>筆試日期<br />WR Date</th>
+            <th>術科日期<br />OP Date</th>
+            <th>班別<br />Shift</th>
+            <th>工號<br />EmpID</th>
+            <th>姓名<br />Name</th>
+            <th>學科評分<br />WR Score</th>
+            <th>術科評分<br />OP Score</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            var i = 0;
+            foreach (var row in Model)
+            {
+                var rowClass = (i++ % 2 == 0) ? "" : "alt-row";
+                <tr class="@rowClass">
+                    <td>@row.StationId</td>
+                    <td>@row.CerItemId</td>
+                    <td>@(row.WRDate?.ToString("yyyy/MM/dd") ?? "")</td>
+                    <td>@(row.OPDate?.ToString("yyyy/MM/dd") ?? "")</td>
+                    <td>@row.ShiftId</td>
+                    <td>@row.EmpId</td>
+                    <td>@row.Name</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(row.WRFile))
+                        {
+                            if (string.IsNullOrEmpty(row.ScoreWR))
+                            {
+                                <a target="_blank" href="@Url.Action("ShowPdf", "ScoreQuery", new { file = row.WRFile })">
+                                    <img src="~/images/pc02.gif" border="0" />
+                                </a>
+                            }
+                            else
+                            {
+                                <a target="_blank" href="@Url.Action("ShowPdf", "ScoreQuery", new { file = row.WRFile })">
+                                    @row.ScoreWR
+                                </a>
+                            }
+                        }
+                        else
+                        {
+                            @row.ScoreWR
+                        }
+                    </td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(row.OPFile))
+                        {
+                            if (string.IsNullOrEmpty(row.ScoreOP))
+                            {
+                                <a target="_blank" href="@Url.Action("ShowPdf", "ScoreQuery", new { file = row.OPFile })">
+                                    <img src="~/images/pc02.gif" border="0" />
+                                </a>
+                            }
+                            else
+                            {
+                                <a target="_blank" href="@Url.Action("ShowPdf", "ScoreQuery", new { file = row.OPFile })">
+                                    @row.ScoreOP
+                                </a>
+                            }
+                        }
+                        else
+                        {
+                            @row.ScoreOP
+                        }
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr><td colspan="9" class="text-center">無資料</td></tr>
+        }
+    </tbody>
+</table>
