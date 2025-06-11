@@ -91,4 +91,25 @@ public class TestingService
     }
 }
     }
+
+        public TestingService()
+        {
+            _repo = new TestingRepository();
+        }
+
+        public List<ScoreQueryResultVM> GetScoreQueryResult(
+            string stationId,
+            string cerItemId,
+            string startYear,
+            string startMonth,
+            string endYear,
+            string endMonth,
+            string shiftId,
+            string empId,
+            string logUser)
+        {
+            return _repo.FetchScoreQueryResult(
+                stationId, cerItemId, startYear, startMonth, endYear, endMonth, shiftId, empId, logUser);
+        }
+    }
 }
