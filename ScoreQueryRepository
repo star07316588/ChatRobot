@@ -1,0 +1,92 @@
+using Dapper;
+using MesTAManagementSystem_New.ViewModels.Training.Testing;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Text;
+
+namespace MesTAManagementSystem_New.Repositories
+{
+    public class TestingRepository
+    {
+        private readonly IDbConnection _db;
+
+        public TestingRepository()
+        {
+            _db = DbUtil.GetOpenConnection(); // 確保你已定義共用 DbUtil 方法開啟連線
+        }
+
+        public List<ScoreQueryResultVM> FetchScoreQueryResult(
+            string stationId,
+            string cerItemId,
+            string startYear,
+            string startMonth,
+            string endYear,
+            string endMonth,
+            string shiftId,
+            string empId,
+            string logUser)
+        {
+            var sql = new StringBuilder();
+            var parameters = new DynamicParameters();
+
+            sql.Append(@"
+                SELECT DISTINCT 
+                    a.station_id,
+                    a.cer_item_id,
+                    c.reg_date,
+                    c.wr_date,
+                    c.op_date,
+                    b.shift_id,
+                    c.emp_id,
+                    b.name,
+                    NVL(c.score_writing, '') AS score_writing,
+                    NVL(c.score_oper, '') AS score_oper,
+                    REPLACE(c.wr_file, '/', '') AS wr_file,
+                    REPLACE(c.op_file, '/', '') AS op_file
+                FROM 
+                    sbl_certificate a
+                    JOIN sbl_cer_reg c ON a.cer_id = c.cer_id
+                    JOIN sbl_emp b ON b.emp_id = c.emp_id
+                WHERE 
+                    ((c.wr_date >= TO_DATE(:startDate, 'YYYY/MM') AND c.wr_date < ADD_MONTHS(TO_DATE(:endDate, 'YYYY/MM'), 1))
+                    OR
+                     (c.op_date >= TO_DATE(:startDate, 'YYYY/MM') AND c.op_date < ADD_MONTHS(TO_DATE(:endDate, 'YYYY/MM'), 1)))
+            ");
+
+            var startDate = $"{startYear}/{startMonth.PadLeft(2, '0')}";
+            var endDate = $"{endYear}/{endMonth.PadLeft(2, '0')}";
+
+            parameters.Add("startDate", startDate);
+            parameters.Add("endDate", endDate);
+
+            if (!string.IsNullOrEmpty(stationId) && stationId != "ALL")
+            {
+                sql.Append(" AND a.station_id = :stationId");
+                parameters.Add("stationId", stationId);
+            }
+
+            if (!string.IsNullOrEmpty(cerItemId) && cerItemId != "ALL")
+            {
+                sql.Append(" AND a.cer_item_id = :cerItemId");
+                parameters.Add("cerItemId", cerItemId);
+            }
+
+            if (!string.IsNullOrEmpty(shiftId) && shiftId != "ALL")
+            {
+                sql.Append(" AND b.shift_id = :shiftId");
+                parameters.Add("shiftId", shiftId);
+            }
+
+            if (!string.IsNullOrEmpty(empId))
+            {
+                sql.Append(" AND b.emp_id = :empId");
+                parameters.Add("empId", empId);
+            }
+
+            sql.Append(" ORDER BY c.reg_date");
+
+            return _db.Query<ScoreQueryResultVM>(sql.ToString(), parameters).AsList();
+        }
+    }
+}
