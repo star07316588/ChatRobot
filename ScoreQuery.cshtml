@@ -1,0 +1,362 @@
+<%--
+'================================================================================
+' file:scoreQuery.jsp
+'--------------------------------------------------------------------------------
+' Description:  學科&術科成績查詢
+'--------------------------------------------------------------------------------
+' Author:       Donk Huang,CIT on 2008/01/21
+' 2008/02/04 Vencent, update css, date option, title
+'================================================================================
+--%>
+<%@ page contentType="text/html; charset=Big5" pageEncoding="BIG5"%>
+<%@ page errorPage="ExamErrMsg.jsp"%>
+<%@ page import="com.mxic.ses.db.*,java.sql.*"%>
+<jsp:useBean id="jdbc" scope="request" class="com.mxic.ses.db.DBAccess"/>
+<jsp:setProperty name="jdbc" property="*" />
+<%@ page import="com.mxic.ses.util.Property"%>
+<%@ page import="java.util.*"%>
+<%@ page session="false"%>
+
+<%
+  request.setCharacterEncoding("Big5");
+  HttpSession session = request.getSession(false);
+  if (session==null) {
+    response.sendRedirect(Property.getRoot()+"timeout.jsp?msg=Timout please login again");
+  }
+  else {
+    String op = (String)session.getAttribute("op");
+    if(op==null)
+      response.sendRedirect(Property.getRoot()+"timeout.jsp?msg=Session is timeout");
+    if (op.equals("N"))
+        response.sendRedirect(Property.getRoot()+"timeout.jsp?msg=No Access Right");
+  }
+%>
+
+<%
+String strExecType = "OnlineTest_ScoreQuery";
+String query_user = (String)session.getAttribute("userid");
+
+//宣告公用參數
+  Connection con=null;
+  String sSql="";
+  java.sql.ResultSet oRS=null;
+  con = DBConnection.getConnection();
+  Calendar gc = new GregorianCalendar();
+  int twoYearAgo = gc.get(gc.YEAR)-2;//2年前
+
+//備存user所選擇的[站別區域] & [試題代碼] & [開始時間] & [結束時間] & [班別] & [工號]
+  String mStation_id = request.getParameter("station_id");
+  if (mStation_id==null)
+      mStation_id="";
+  String mCer_item_id_s = request.getParameter("cer_item_id_s");
+  if (mCer_item_id_s == null)
+      mCer_item_id_s = "";
+  String mStart_year = request.getParameter("start_year");
+  if(mStart_year==null)
+      mStart_year="";
+  String mStart_month = request.getParameter("start_month");
+  if(mStart_month==null)
+      mStart_month="";
+  String mEnd_year = request.getParameter("end_year");
+  if(mEnd_year==null)
+      mEnd_year="";
+  String mEnd_month = request.getParameter("end_month");
+  if(mEnd_month==null)
+      mEnd_month="";
+  String mShift_id = request.getParameter("shift_id");
+  if(mShift_id==null)
+      mShift_id="";
+  String mEMP_id = request.getParameter("EMP_id");
+  if(mEMP_id==null)
+      mEMP_id="";
+%>
+
+<html>
+<head>
+<title>成績查詢</title>
+
+<link rel="stylesheet" href="../../ses.css">
+</head>
+<body  bgcolor="#FFFFFF" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+<form name=frmScoreQuery action ="scoreQuery.jsp" method="POST" value="">
+<!--<P><FONT size=5><STRONG>成績查詢</STRONG></FONT></P>-->
+<table><td><img src="../images/title-blank.jpg"><td class="title">成績查詢</table>
+<hr size="1" width="800" noshade align=left>
+
+<TABLE cellSpacing=1 cellPadding=1 width="80%" border=0>
+  <TR>
+    <TD>站別區域 Station：</TD>
+    <TD><SELECT name=station_id onChange=document.forms[0].submit()>
+        <OPTION>ALL</OPTION>
+<%
+//站別區域/清單方塊
+  sSql = "SELECT DISTINCT station_id FROM sbl_station ORDER BY station_id";
+  oRS=jdbc.queryData(sSql,con);
+
+  while(oRS.next()){
+      if(oRS.getString("station_id").trim().equals(mStation_id.trim()))
+          out.print("<OPTION selected>" + mStation_id + "</OPTION>");
+      else
+          out.print("<OPTION>" + oRS.getString("station_id") + "</OPTION>");
+  }
+%>
+        </SELECT>
+    </TD>
+
+    <TD>試題代碼 Course：</TD>
+    <TD><SELECT name=cer_item_id_s>
+	    <OPTION>ALL</OPTION>
+<%
+//術科試題代碼/清單方塊
+  if(request.getParameter("station_id") !=null){
+      sSql = " SELECT DISTINCT cer_item_id" +
+             " FROM sbl_cer_item" +
+             " WHERE station_id ='" + mStation_id + "'" +
+             //Added by Jack Hsieh 2009/09/11 
+             //未刪除者, 才顯示. a.dlt_date is null
+             " and dlt_date is null " +
+             " ORDER BY cer_item_id";
+      oRS=jdbc.queryData(sSql,con);
+
+      while(oRS.next()){
+          if(oRS.getString("cer_item_id").trim().equals(mCer_item_id_s.trim()))
+              out.print("<OPTION selected>" + mCer_item_id_s + "</OPTION>");
+          else
+              out.print("<OPTION>" + oRS.getString("cer_item_id") + "</OPTION>");
+      }
+  }
+%>
+        </SELECT>
+    </TD>
+  </TR>
+
+  <TR>
+    <TD>開始時間 Start Date：</TD>
+    <TD><SELECT name=start_year>
+<%
+  for(int i=0;i<=2;i++){
+      if(String.valueOf(twoYearAgo + i).equals(mStart_year))
+          out.print("<OPTION selected>" + mStart_year + "</OPTION>");
+      else {
+          if(i==2 && mStart_year=="")
+            out.print("<OPTION selected>" + (twoYearAgo + i) + "</OPTION>");
+          else
+    	    out.print("<OPTION>" + (twoYearAgo + i) + "</OPTION>");
+      }
+  }
+%>
+        </SELECT>年
+        <SELECT name=start_month>
+<%
+  int thisMonth = gc.get(gc.MONTH)+1;//本月
+
+  for(int i=1;i<=12;i++){
+      if(String.valueOf(i).equals(mStart_month))
+          out.print("<OPTION selected>" + mStart_month + "</OPTION>");
+      else{
+          if(thisMonth==i && mStart_month=="")
+              out.print("<OPTION selected>" + i + "</OPTION>");
+          else
+              out.print("<OPTION>" + i + "</OPTION>");
+      }
+  }
+%>
+        </SELECT>月
+    </TD>
+
+    <TD>結束時間 End Date：</TD>
+    <TD><SELECT name=end_year>
+<%
+  for(int i=0;i<=2;i++){
+      if(String.valueOf(twoYearAgo + i).equals(mEnd_year))
+          out.print("<OPTION selected>" + mEnd_year + "</OPTION>");
+      else {
+          if(i==2 && mEnd_year=="")
+              out.print("<OPTION selected>" + (twoYearAgo + i) + "</OPTION>");
+          else
+	      out.print("<OPTION>" + (twoYearAgo + i) + "</OPTION>");
+      }
+  }
+%>
+        </SELECT>年
+        <SELECT name=end_month>
+<%
+  for(int i=1;i<=12;i++){
+      if(String.valueOf(i).equals(mEnd_month))
+          out.print("<OPTION selected>" + mEnd_month + "</OPTION>");
+      else{
+          if(thisMonth==i && mEnd_month=="")
+              out.print("<OPTION selected>" + i + "</OPTION>");
+          else
+              out.print("<OPTION>" + i + "</OPTION>");
+      }
+  }
+%>
+        </SELECT>月
+    </TD>
+  </TR>
+
+  <TR>
+    <TD>班別 Shift：</TD>
+    <TD><SELECT name=shift_id>
+      <OPTION>ALL</OPTION>
+<%
+  sSql = " SELECT DISTINCT shift_id" +
+         " FROM sbl_emp" +
+         " ORDER BY shift_id";
+  oRS=jdbc.queryData(sSql,con);
+
+  while(oRS.next()){
+      if(oRS.getString("shift_id").trim().equals(mShift_id.trim()))
+          out.print("<OPTION selected>" + mShift_id + "</OPTION>");
+      else
+          out.print("<OPTION>" + oRS.getString("shift_id") + "</OPTION>");
+  }
+%>
+        </SELECT>
+    </TD>
+    <TD>工號 Emp ID：</TD>
+<%
+  String sUserId = (String)session.getAttribute("userid");
+  Vector access = com.mxic.ses.util.Accessright.getGroup(sUserId);
+
+  if(access.contains("OpOperator")){
+		out.print("<TD><input type=text name=EMP_id size=5 maxlength=5 readOnly=true value="+sUserId+" class='readOnlyText'></TD>");
+		mEMP_id = sUserId;
+		/*
+                mStart_year = String.valueOf(gc.get(gc.YEAR));
+		mStart_month = String.valueOf(gc.get(gc.MONTH)+1);
+		mEnd_year = String.valueOf(gc.get(gc.YEAR));
+		mEnd_month = String.valueOf(gc.get(gc.MONTH)+1);
+                */
+  }
+  else
+	out.print("<TD><input type=text name=EMP_id size=5 maxlength=5 value=></TD>");
+%>
+  </TR>
+</TABLE>
+
+<INPUT type=submit size=30 value="查詢 Query"  name=cmdQuery>
+<hr size="1" width="800" noshade align=left>
+
+<TABLE cellSpacing=0 cellPadding=0 width="80%" border=1 bordercolor=black>
+  <TR align=center bgcolor="#666666">
+    <TD width="7%"><FONT color="#FFFFFF"><B>站別區域<br>Station</B></FONT></TD>
+    <TD width="10%"><FONT color="#FFFFFF"><B>試題代碼<br>Course</B></FONT></TD>
+    <TD width="10%"><FONT color="#FFFFFF"><B>筆試日期<br>Date</B></FONT></TD>
+    <TD width="10%"><FONT color="#FFFFFF"><B>術科日期<br>Date</B></FONT></TD>    
+    <TD width="5%"><FONT color="#FFFFFF"><B>班別<br>Shift</B></FONT></TD>
+    <TD width="5%"><FONT color="#FFFFFF"><B>工號<br>EmpID</B></FONT></TD>
+    <TD width="10%"><FONT color="#FFFFFF"><B>姓名<br>Name</B></FONT></TD>
+    <TD width="7%" nowrap><FONT color="#FFFFFF"><B>學科評分<br>Writing Score</B></FONT></TD>
+    <TD width="7%" nowrap><FONT color="#FFFFFF"><B>術科評分<br>Oper. Score</B></FONT></TD>
+  </TR>
+
+<%
+  if(!mStart_year.equals("") && !mEnd_year.equals("")){
+	  String sOP_Date = null;
+	  String sWR_Date = null;
+      sSql = " SELECT DISTINCT a.station_id,a.cer_item_id,c.reg_date,c.wr_date,c.op_date,b.shift_id,c.emp_id,b.name," +
+             " NVL(c.score_writing,'&nbsp;') as score_writing,NVL(c.score_oper,'&nbsp;') as score_oper" +
+						 " ,replace(c.wr_file,'/','') as wr_file, replace(c.op_file,'/','') as op_file" +
+             " FROM sbl_certificate a, sbl_emp b, sbl_cer_reg c" +
+             " WHERE ((c.wr_date >= to_date('" + mStart_year + "/" + mStart_month + "','YYYY/MM')" +
+             " AND c.wr_date < add_months(to_date('" + mEnd_year + "/" + Integer.parseInt(mEnd_month) + "','YYYY/MM'),1)) OR "+
+             	 "(c.op_date >= to_date('" + mStart_year + "/" + mStart_month + "','YYYY/MM')" +
+                     " AND c.op_date < add_months(to_date('" + mEnd_year + "/" + Integer.parseInt(mEnd_month) + "','YYYY/MM'),1)))";
+
+      if(!mStation_id.equals("ALL") && !mStation_id.equals(""))
+          sSql+= " AND a.station_id = '" + mStation_id + "'";
+      if(!mCer_item_id_s.equals("ALL") && !mCer_item_id_s.equals(""))
+          sSql+= " AND a.cer_item_id = '" + mCer_item_id_s + "'";
+      if(!mShift_id.equals("ALL") && !mShift_id.equals(""))
+          sSql+= " AND b.shift_id = '" + mShift_id + "'";
+      if(!mEMP_id.equals(""))
+          sSql+= " AND b.emp_id = '" + mEMP_id + "'";
+
+      sSql+= " AND a.cer_id = c.cer_id" +
+             " AND b.emp_id = c.emp_id" +
+             " ORDER BY c.reg_date";
+      System.out.println(sSql);
+      
+      //Modified by Jack on 2023/08/21 for record Rbl_Confidential_SysLog.  
+      //要用 String crt_user = (String)session.getAttribute("userid");  ==> 登入系統者.   		
+      //oRS=jdbc.queryData(sSql,con);
+      oRS=jdbc.queryData(sSql,con, "SES", query_user, strExecType);
+
+      int iOdd=1;//儲存行間,顏色區隔用途
+      while(oRS.next()){
+    	  sWR_Date = oRS.getString("wr_date");
+    	  if(sWR_Date==null){
+    		  sWR_Date="&nbsp;";
+    	  }else{
+    		  sWR_Date = sWR_Date.substring(0,10);
+    	  }
+    	  sOP_Date = oRS.getString("op_date");
+    	  if(sOP_Date==null){
+    		  sOP_Date="&nbsp;";
+    	  }else{
+    		  sOP_Date = sOP_Date.substring(0,10);
+    	  }
+          if(iOdd%2==1){
+%>
+              <TR align=center>
+<%
+          }
+          else{
+%>
+              <TR align=center bgcolor="#D1D6E0">
+<%
+  				}
+%>
+                <TD><%=oRS.getString("station_id")%></TD>
+                <TD><%=oRS.getString("cer_item_id")%></TD>
+                <TD><%=sWR_Date%></TD>
+                <TD><%=sOP_Date%></TD>                
+                <TD><%=oRS.getString("shift_id")%></TD>
+                <TD><%=oRS.getString("emp_id")%></TD>
+                <TD><%=oRS.getString("name")%></TD>
+<%
+         if (oRS.getString("wr_file") != null && oRS.getString("wr_file").length()>0) {
+        	 if(oRS.getString("score_writing").equals("&nbsp;")){
+                out.print("<td><a target='_blank' href='showpdf.jsp?file="+
+									oRS.getString("wr_file") + "'><img src="+"../../images/pc02.gif border=0"+"></a></td>");
+        	 }else{
+                 out.print("<td><a target='_blank' href='showpdf.jsp?file="+
+							oRS.getString("wr_file") + "'>" +
+							oRS.getString("score_writing") + "</a></td>");        		 
+        	 }
+         } else {
+                out.println("<TD>"+oRS.getString("score_writing") + "</TD>");
+         }
+         if (oRS.getString("op_file") != null && oRS.getString("op_file").length()>0) {
+       	 	if(oRS.getString("score_oper").equals("&nbsp;")){
+                   out.print("<td><a target='_blank' href='showpdf.jsp?file="+
+						oRS.getString("op_file") + "'><img src="+"../../images/pc02.gif border=0"+"></a></td>");
+       	 	}else{
+                   out.print("<td><a target='_blank' href='showpdf.jsp?file="+
+						oRS.getString("op_file") + "'>" +
+						oRS.getString("score_oper") + "</a></td>");
+       	 	}
+         } else {
+                out.println("<TD>"+oRS.getString("score_oper") + "</TD>");
+         }
+%>
+              </TR>
+<%
+          iOdd++;
+      }
+      oRS.close();
+  }
+  if(oRS!=null){
+	  oRS.close();
+  }
+  if(con!=null){
+	  con.close();
+  }
+%>
+</TABLE>
+
+</form>
+</body>
+</html>
