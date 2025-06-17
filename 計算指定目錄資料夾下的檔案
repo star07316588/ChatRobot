@@ -1,1 +1,15 @@
-for /D %d in (*) do @echo %d & dir /A:-D /B "%d" | find /C /V ""
+@echo off
+setlocal enabledelayedexpansion
+
+set "targetDir=D:\你的目錄"  ← 請把這行改成你的實際路徑
+
+> "%targetDir%\結果.txt" (
+    for /D %%d in ("%targetDir%\2025*") do (
+        set "folderName=%%~nd"
+        for /f %%c in ('dir /A:-D /B "%%d" ^| find /C /V ""') do (
+            echo !folderName!: %%c 個檔案
+        )
+    )
+)
+
+echo 結果已儲存至 %targetDir%\結果.txt
