@@ -1,0 +1,1 @@
+for /D %d in (*) do @echo %d & dir /A:-D /B "%d" | find /C /V ""
