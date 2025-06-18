@@ -1,0 +1,75 @@
+public class ReportRepository
+{
+    private readonly IDbConnection _db;
+
+    public ReportRepository(IDbConnection db)
+    {
+        _db = db;
+    }
+
+    public List<Dictionary<string, object>> GetStatusData(
+        string startYear, string startMonth,
+        string endYear, string endMonth,
+        string deptId, string stationId,
+        string userId, string functionName)
+    {
+        string baseSql = @"
+            SELECT a.*,
+                   DECODE(a.type, 'OBJECT', '客觀', 'SUBJECT', '主觀') AS NEW_TYPE
+              FROM Rbl_DL_Status a
+             WHERE year BETWEEN :StartYear AND :EndYear
+               AND month BETWEEN :StartMonth AND :EndMonth";
+
+        string sqlIns = $@"
+            SELECT a.*,
+                   DECODE(a.type, 'OBJECT', '客觀', 'SUBJECT', '主觀') AS NEW_TYPE
+              FROM Rbl_DL_Status a
+             WHERE year BETWEEN '{startYear}' AND '{endYear}'
+               AND month BETWEEN '{startMonth}' AND '{endMonth}'";
+
+        var parameters = new DynamicParameters();
+        parameters.Add("StartYear", startYear);
+        parameters.Add("EndYear", endYear);
+        parameters.Add("StartMonth", startMonth);
+        parameters.Add("EndMonth", endMonth);
+
+        if (!string.IsNullOrEmpty(deptId))
+        {
+            baseSql += " AND dept_id = :DeptId";
+            sqlIns += $" AND dept_id = '{deptId}'";
+            parameters.Add("DeptId", deptId);
+        }
+
+        if (!string.IsNullOrEmpty(stationId))
+        {
+            baseSql += $" AND Station_id IN ({stationId})";
+            sqlIns += $" AND Station_id IN ({stationId})";
+        }
+
+        baseSql += " ORDER BY Year DESC, Month DESC, Type, Dept_ID, Station_ID, Title, Shift_id";
+        sqlIns += " ORDER BY Year DESC, Month DESC, Type, Dept_ID, Station_ID, Title, Shift_id";
+
+        try
+        {
+            InsertConfidential("DL", userId, functionName, sqlIns);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+        var result = _db.Query(baseSql, parameters);
+
+        // 將回傳轉成 Dictionary<string, object>
+        return result.Select(row => (IDictionary<string, object>)row)
+                     .Select(dict => dict.ToDictionary(kv => kv.Key, kv => kv.Value))
+                     .ToList();
+    }
+
+    private void InsertConfidential(string module, string userId, string functionName, string sqlIns)
+    {
+        // 實作記錄查詢行為
+        // EX: 寫入 SES_CONFIDENTIAL_LOG 或日誌表
+        // 這裡可連接到一個共用日誌表或 API
+    }
+}
