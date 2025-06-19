@@ -1,0 +1,39 @@
+        $submitButton.click(function () {
+            var StartYear = $.trim($("#StartYear").val());
+            var StartMonth = $.trim($("#StartMonth").val());
+            var EndYear = $.trim($("#EndYear").val());
+            var EndMonth = $.trim($("#EndMonth").val());
+            var Dept_Id = $.trim($("#Dept_Id").val());
+            var selectedStations = $('#StationListBox').val();
+
+            if (StartYear == "" && StartMonth == "" && EndYear == "" && EndMonth == "" && Dept_Id == "" && Station_Id == "" ) {
+                alert("查詢條件不得為空");
+            } else {
+                $.ajax({
+                    url: '@Url.Action("QueryTable")',
+                    data: $searchForm.serialize(), JSON.stringify({selectedStationIds: selectedStations}),
+                    type: 'POST',
+                    dataType: 'json',
+                    beforeSend: function () {
+                        $.blockUI({ css: { cursor: 'wait'} });
+                    },
+                    statusCode: {
+                        401: function () {
+                            alert('登入期限已過，即將返回首頁');
+                            window.location.replace('@Url.Action("Index", "Home")');
+                        }
+                    },
+                    success: function (data) {
+                        setTimeout(function () {
+                            $resultTable.jqGrid('clearGridData').jqGrid('setGridParam', {
+                                datatype: 'local',
+                                data: data
+                            }).trigger('reloadGrid');
+                        }, 200);
+                    },
+                    complete: function () {
+                        $.unblockUI();
+                    }
+                });
+            }
+        });
