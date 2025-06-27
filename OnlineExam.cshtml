@@ -1,0 +1,40 @@
+@model YourNamespace.ViewModels.OnlineExamVM
+
+@{
+    ViewBag.Title = "線上考試 Online Exam";
+}
+
+<h2>線上考試 Online Exam</h2>
+
+<div id="showTime" class="text-danger text-right" style="font-size: 24px;"></div>
+
+@using (Html.BeginForm("StartExam", "OnlineExam", FormMethod.Post, new { id = "examForm" }))
+{
+    @Html.HiddenFor(m => m.ExamStatus)
+    @Html.HiddenFor(m => m.SpendTime)
+    @Html.HiddenFor(m => m.AllTime)
+    @Html.HiddenFor(m => m.ExamRegNo)
+
+    <table class="table table-bordered" style="width: 100%; max-width: 800px;">
+        <tr>
+            <td class="bg-dark text-white text-center">工號 EMP ID</td>
+            <td>
+                @Html.TextBoxFor(m => m.EmpId, new { @class = "form-control", @readonly = "readonly", id = "txtEmp_id" })
+            </td>
+
+            <td class="bg-dark text-white text-center">試題項目代碼 Course</td>
+            <td>
+                @Html.DropDownListFor(m => m.SelectedCourseId, Model.CourseList, "--請選擇--", new { @class = "form-control", id = "sltCerItemId", onchange = "getStationId()" })
+            </td>
+
+            <td class="bg-dark text-white text-center">站別 Station</td>
+            <td>
+                @Html.DropDownListFor(m => m.SelectedStationId, Model.StationList, "--請選擇--", new { @class = "form-control", id = "sltStationId" })
+            </td>
+
+            <td>
+                <button type="submit" class="btn btn-success" onclick="return validateStartExam();">開始測驗 Start Exam</button>
+            </td>
+        </tr>
+    </table>
+}
