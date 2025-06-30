@@ -1,0 +1,44 @@
+namespace YourProject.ViewModels.OnlineExam
+{
+    public class PageExamListVM
+    {
+        // 基本資料
+        public string EmpId { get; set; }
+        public string CerItemId { get; set; }
+        public string StationId { get; set; }
+        public string ExamRegNo { get; set; }
+
+        // 作答資訊
+        public List<string> TFAnswers { get; set; } = new List<string>();          // 是非題答案
+        public List<string> ChooseAnswers { get; set; } = new List<string>();      // 選擇題答案
+        public List<string> NecessaryAnswers { get; set; } = new List<string>();   // 必考題答案
+        public List<string> LinkAnswers { get; set; } = new List<string>();        // 連連看答案（若為圖片選擇或其他格式）
+
+        // 評分資訊
+        public int TotalQuestions { get; set; }
+        public int CorrectCount { get; set; }
+        public int Score { get; set; }
+
+        // 顯示答對或答錯用的欄位
+        public List<QuestionResultVM> TFResults { get; set; } = new List<QuestionResultVM>();
+        public List<QuestionResultVM> ChooseResults { get; set; } = new List<QuestionResultVM>();
+        public List<QuestionResultVM> NecessaryResults { get; set; } = new List<QuestionResultVM>();
+        public List<LinkQuestionResultVM> LinkResults { get; set; } = new List<LinkQuestionResultVM>();
+    }
+
+    public class QuestionResultVM
+    {
+        public string Question { get; set; }
+        public string UserAnswer { get; set; }
+        public string CorrectAnswer { get; set; }
+        public bool IsCorrect => UserAnswer?.Trim().ToUpper() == CorrectAnswer?.Trim().ToUpper();
+    }
+
+    public class LinkQuestionResultVM
+    {
+        public string QuestionImageFileName { get; set; }     // 圖片檔名
+        public string UserAnswer { get; set; }
+        public string CorrectAnswer { get; set; }
+        public bool IsCorrect => UserAnswer?.Trim().ToUpper() == CorrectAnswer?.Trim().ToUpper();
+    }
+}
