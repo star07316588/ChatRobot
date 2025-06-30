@@ -1,59 +1,47 @@
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
-
-namespace YourNamespace.ViewModels.Exam
+namespace YourProject.ViewModels.OnlineExam
 {
     public class PageExamListVM
     {
         // 基本資訊
-        public string WorkerId { get; set; }
-        public string ExamId { get; set; }
+        public string EmpId { get; set; }
+        public string CerItemId { get; set; }
         public string StationId { get; set; }
         public string ExamRegNo { get; set; }
 
-        // 測驗用時
-        public int SpendTime { get; set; }
-        public int AllTime { get; set; }
+        // 題目資料（用來顯示題號與正確答案）
+        public List<QuestionVM> NecessaryQuestions { get; set; } = new List<QuestionVM>();  // 必考題
+        public List<QuestionVM> TrueFalseQuestions { get; set; } = new List<QuestionVM>();  // 是非題
+        public List<QuestionVM> ChoiceQuestions { get; set; } = new List<QuestionVM>();     // 選擇題
 
-        // 各類型題目的答案
-        public List<string> UserNecessaryAnswers { get; set; } = new List<string>(); // 必考題
-        public List<string> UserTrueFalseAnswers { get; set; } = new List<string>(); // 是非題
-        public List<string> UserMultipleChoiceAnswers { get; set; } = new List<string>(); // 選擇題
-        public List<string> UserLinkAnswers { get; set; } = new List<string>(); // 連連看
-        public List<string> ImageFiles { get; set; } = new List<string>(); // 圖片檔
-
-        // 後端用資料 (由 Session 傳入)
-        public List<string> NecessaryQuestions { get; set; } = new List<string>();
+        // 使用者作答
         public List<string> NecessaryAnswers { get; set; } = new List<string>();
-        public List<string> TrueFalseQuestions { get; set; } = new List<string>();
-        public List<string> TrueFalseAnswers { get; set; } = new List<string>();
-        public List<string> MultipleChoiceQuestions { get; set; } = new List<string>();
-        public List<string> MultipleChoiceAnswers { get; set; } = new List<string>();
+        public List<string> TFAnswers { get; set; } = new List<string>();
+        public List<string> ChooseAnswers { get; set; } = new List<string>();
 
-        public List<string> LinkQuestions { get; set; } = new List<string>();
-        public List<string> LinkAnswers { get; set; } = new List<string>();
+        // 成績資訊
+        public int TotalQuestions => NecessaryQuestions.Count + TrueFalseQuestions.Count + ChoiceQuestions.Count;
+        public int CorrectCount { get; set; }
+        public int Score { get; set; }
 
-        // 連連看圖片
-        public List<string> ExamImages { get; set; } = new List<string>();
-
-        // 題組資訊 (例如每一題目大題)
-        public List<ExamInfoGroup> ExamGroups { get; set; } = new List<ExamInfoGroup>();
-
-        // 成績
-        public int TotalScore { get; set; }
-        public int UsedMinutes { get; set; }
-        public int UsedSeconds { get; set; }
-
-        // 成績分析輸出訊息
-        public List<string> FeedbackMessages { get; set; } = new List<string>();
+        // 顯示正確與否的比對
+        public List<QuestionResultVM> NecessaryResults { get; set; } = new List<QuestionResultVM>();
+        public List<QuestionResultVM> TFResults { get; set; } = new List<QuestionResultVM>();
+        public List<QuestionResultVM> ChoiceResults { get; set; } = new List<QuestionResultVM>();
     }
 
-    public class ExamInfoGroup
+    public class QuestionVM
     {
-        public string Title { get; set; }
-        public List<string> Subjects { get; set; } = new List<string>();
-        public List<string> Answers { get; set; } = new List<string>();
-        public List<string> UserAnswers { get; set; } = new List<string>();
-        public List<string> ImageFiles { get; set; } = new List<string>();
+        public string Question { get; set; }
+        public string CorrectAnswer { get; set; }
+    }
+
+    public class QuestionResultVM
+    {
+        public string Question { get; set; }
+        public string UserAnswer { get; set; }
+        public string CorrectAnswer { get; set; }
+        public bool IsCorrect => 
+            !string.IsNullOrWhiteSpace(UserAnswer) &&
+            UserAnswer.Trim().Equals(CorrectAnswer.Trim(), StringComparison.OrdinalIgnoreCase);
     }
 }
