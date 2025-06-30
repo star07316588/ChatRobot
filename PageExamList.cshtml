@@ -1,0 +1,91 @@
+@model YourNamespace.ViewModels.PageExamListVM
+
+@{ ViewBag.Title = "Page Exam List"; Layout = "~/Views/Shared/_Layout.cshtml"; }
+
+<h2>考試結果填寫 Submit Exam Result</h2>@using (Html.BeginForm("SubmitExam", "Exam", FormMethod.Post)) { @Html.HiddenFor(m => m.EmpId) @Html.HiddenFor(m => m.CerItemId) @Html.HiddenFor(m => m.StationId) @Html.HiddenFor(m => m.ExamRegNo) @Html.HiddenFor(m => m.SpendTime) @Html.HiddenFor(m => m.AllTime)
+
+<h4>1. 必考題 Necessary Questions</h4>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Question</th>
+            <th>Answer</th>
+        </tr>
+    </thead>
+    <tbody>
+    @for (int i = 0; i < Model.NecessaryQuestions.Count; i++)
+    {
+        <tr>
+            <td>@(i + 1)</td>
+            <td>@Model.NecessaryQuestions[i].Subject</td>
+            <td>
+                <input type="text" name="NecessaryAnswers[@i]" maxlength="1" size="2" />
+                <input type="hidden" name="NecessaryCorrect[@i]" value="@Model.NecessaryQuestions[i].Answer" />
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<h4>2. 是非題 True/False Questions</h4>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Question</th>
+            <th>Answer</th>
+        </tr>
+    </thead>
+    <tbody>
+    @for (int i = 0; i < Model.TrueFalseQuestions.Count; i++)
+    {
+        <tr>
+            <td>@(i + 1)</td>
+            <td>@Model.TrueFalseQuestions[i].Subject</td>
+            <td>
+                <select name="TFAnswers[@i]">
+                    <option value="T">○</option>
+                    <option value="F">╳</option>
+                </select>
+                <input type="hidden" name="TFCorrect[@i]" value="@Model.TrueFalseQuestions[i].Answer" />
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<h4>3. 選擇題 Multiple Choice Questions</h4>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Question</th>
+            <th>Answer</th>
+        </tr>
+    </thead>
+    <tbody>
+    @for (int i = 0; i < Model.ChoiceQuestions.Count; i++)
+    {
+        <tr>
+            <td>@(i + 1)</td>
+            <td>@Model.ChoiceQuestions[i].Subject</td>
+            <td>
+                <input type="text" name="ChoiceAnswers[@i]" maxlength="1" size="2" />
+                <input type="hidden" name="ChoiceCorrect[@i]" value="@Model.ChoiceQuestions[i].Answer" />
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<h4>4. 連連看題型 Linking Questions</h4>
+<div>
+    @* Render matching questions, images, etc., from Model.LinkQuestions *@
+    <p>（請於此補上圖片或對應欄位，依 Model.LinkQuestions 設計）</p>
+</div>
+
+<button type="submit" class="btn btn-primary">送出 Submit</button>
+
+}
+
