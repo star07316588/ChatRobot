@@ -1,0 +1,18 @@
+$('#Bnt').click(function () {
+    var empId = $('#txtEmp_id').val();
+    var cerItemId = $('#sltCerItemId').val();
+
+    if (!empId || !cerItemId) {
+        alert("工號與試題項目不得為空");
+        return;
+    }
+
+    $.post('/OnlineExam/StartExam', { empId: empId, cerItemId: cerItemId }, function (res) {
+        if (res.success) {
+            // 成功後可導頁或其他操作
+            location.href = '/OnlineExam/PageExamList?empId=' + empId + '&cerItemId=' + cerItemId;
+        } else {
+            alert("設定成績失敗");
+        }
+    });
+});
