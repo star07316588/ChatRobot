@@ -1,0 +1,133 @@
+@model MesTAManagementSystem_New.ViewModels.Training.Testing.ExamResultVM
+
+@{
+    ViewBag.Title = "Exam Result - 考試結果";
+    Layout = "~/Views/Shared/_LayoutMain.cshtml";
+}
+
+<h2>考試結果 Exam Result</h2>
+
+<div>
+    <p><strong>工號 EMP ID:</strong> @Model.EmpId</p>
+    <p><strong>試題項目代碼 Course:</strong> @Model.CerItemId</p>
+    <p><strong>站別 Station:</strong> @Model.StationId</p>
+</div>
+
+<hr />
+
+<h3>總成績 Total Score: @Model.TotalScore</h3>
+
+<ul>
+    <li>必考題 Necessary Score: @Model.NecessaryScore</li>
+    <li>是非題 True/False Score: @Model.TrueFalseScore</li>
+    <li>選擇題 Choice Score: @Model.ChoiceScore</li>
+    <li>連連看 Link Score: @Model.LinkScore</li>
+</ul>
+
+<hr />
+
+<h4>1. 必考題 Necessary Questions</h4>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Question</th>
+            <th>Correct</th>
+            <th>Your Answer</th>
+            <th>Result</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (int i = 0; i < Model.NecessaryQuestions.Count; i++)
+        {
+            var q = Model.NecessaryQuestions[i];
+            <tr class="@(q.IsCorrect ? "table-success" : "table-danger")">
+                <td>@(i + 1)</td>
+                <td>@q.Subject</td>
+                <td>@q.CorrectAnswer</td>
+                <td>@q.UserAnswer</td>
+                <td>@(q.IsCorrect ? "✔ 正確" : "✘ 錯誤")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4>2. 是非題 True/False Questions</h4>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Question</th>
+            <th>Correct</th>
+            <th>Your Answer</th>
+            <th>Result</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (int i = 0; i < Model.TrueFalseQuestions.Count; i++)
+        {
+            var q = Model.TrueFalseQuestions[i];
+            <tr class="@(q.IsCorrect ? "table-success" : "table-danger")">
+                <td>@(i + 1)</td>
+                <td>@q.Subject</td>
+                <td>@q.CorrectAnswer</td>
+                <td>@q.UserAnswer</td>
+                <td>@(q.IsCorrect ? "✔ 正確" : "✘ 錯誤")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4>3. 選擇題 Multiple Choice Questions</h4>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Question</th>
+            <th>Correct</th>
+            <th>Your Answer</th>
+            <th>Result</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (int i = 0; i < Model.ChoiceQuestions.Count; i++)
+        {
+            var q = Model.ChoiceQuestions[i];
+            <tr class="@(q.IsCorrect ? "table-success" : "table-danger")">
+                <td>@(i + 1)</td>
+                <td>@q.Subject</td>
+                <td>@q.CorrectAnswer</td>
+                <td>@q.UserAnswer</td>
+                <td>@(q.IsCorrect ? "✔ 正確" : "✘ 錯誤")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4>4. 連連看 Linking Questions</h4>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Question</th>
+            <th>Correct</th>
+            <th>Your Answer</th>
+            <th>Result</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (int i = 0; i < Model.LinkQuestions.Count; i++)
+        {
+            var q = Model.LinkQuestions[i];
+            <tr class="@(q.IsCorrect ? "table-success" : "table-danger")">
+                <td>@(i + 1)</td>
+                <td>@q.Subject</td>
+                <td>@q.CorrectAnswer</td>
+                <td>@q.UserAnswer</td>
+                <td>@(q.IsCorrect ? "✔ 正確" : "✘ 錯誤")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a class="btn btn-secondary" href="@Url.Action("Index", "Home")">返回首頁 Back to Home</a>
