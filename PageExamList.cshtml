@@ -66,8 +66,10 @@
                 {
                     <tr>
                         <td>
-                            <input type="text" name="NecessaryAnswers[@i]" maxlength="1" size="2" />
-                            <input type="hidden" name="NecessaryCorrect[@i]" value="@Model.NecessaryQuestions[i].Answer" />
+                            <input type="text" name="NecessaryQuestions[@i].UserAnswer" value="@Model.NecessaryQuestions[i].UserAnswer" maxlength="1" size="2" />
+                            <input type="hidden" name="NecessaryQuestions[@i].Answer" value="@Model.NecessaryQuestions[i].Answer" />
+                            <input type="hidden" name="NecessaryQuestions[@i].Subject" value="@Model.NecessaryQuestions[i].Subject" />
+                            <input type="hidden" name="NecessaryQuestions[@i].Type" value="@Model.NecessaryQuestions[i].Type" />
                         </td>
                         <td>@(i + 1)</td>
                         <td>@Model.NecessaryQuestions[i].Subject</td>
@@ -92,11 +94,13 @@
                 {
                     <tr>
                         <td>
-                            <select name="TFAnswers[@i]">
+                            <select name="TrueFalseQuestions[@i].UserAnswer">
                                 <option value="T">○</option>
                                 <option value="F">╳</option>
                             </select>
-                            <input type="hidden" name="TFCorrect[@i]" value="@Model.TrueFalseQuestions[i].Answer" />
+                            <input type="hidden" name="TrueFalseQuestions[@i].Answer" value="@Model.TrueFalseQuestions[i].Answer" />
+                            <input type="hidden" name="TrueFalseQuestions[@i].Subject" value="@Model.TrueFalseQuestions[i].Subject" />
+                            <input type="hidden" name="TrueFalseQuestions[@i].Type" value="@Model.TrueFalseQuestions[i].Type" />
                         </td>
                         <td>@(i + 1)</td>
                         <td>@Model.TrueFalseQuestions[i].Subject</td>
@@ -121,8 +125,10 @@
                 {
                     <tr>
                         <td>
-                            <input type="text" name="ChoiceAnswers[@i]" maxlength="1" size="2" />
-                            <input type="hidden" name="ChoiceCorrect[@i]" value="@Model.ChoiceQuestions[i].Answer" />
+                            <input type="text" name="ChoiceQuestions[@i].UserAnswer" value="@Model.ChoiceQuestions[i].UserAnswer" maxlength="1" size="2" />
+                            <input type="hidden" name="ChoiceQuestions[@i].Answer" value="@Model.ChoiceQuestions[i].Answer" />
+                            <input type="hidden" name="ChoiceQuestions[@i].Subject" value="@Model.ChoiceQuestions[i].Subject" />
+                            <input type="hidden" name="ChoiceQuestions[@i].Type" value="@Model.ChoiceQuestions[i].Type" />
                         </td>
                         <td>@(i + 1)</td>
                         <td>@Model.ChoiceQuestions[i].Subject</td>
@@ -148,8 +154,10 @@
                 {
                     <tr>
                         <td>
-                            <input type="text" name="LinkAnswers[@i]" maxlength="1" size="2" />
-                            <input type="hidden" name="LinkCorrect[@i]" value="@Model.LinkQuestions[i].Answer" />
+                            <input type="text" name="LinkQuestions[@i].UserAnswer" value="@Model.LinkQuestions[i].UserAnswer" maxlength="1" size="2" />
+                            <input type="hidden" name="LinkQuestions[@i].Answer" value="@Model.LinkQuestions[i].Answer" />
+                            <input type="hidden" name="LinkQuestions[@i].Subject" value="@Model.LinkQuestions[i].Subject" />
+                            <input type="hidden" name="LinkQuestions[@i].Type" value="@Model.LinkQuestions[i].Type" />
                         </td>
                         <td>@(i + 1)</td>
                         <td>@Model.LinkQuestions[i].Subject</td>
