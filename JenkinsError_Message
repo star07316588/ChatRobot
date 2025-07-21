@@ -1,0 +1,15 @@
+Building the projects in this solution one at a time. To enable parallel build, please add the "/m" switch.
+Build started 2025/7/18 下午 04:43:13.
+Project "C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\MesTAManagementSystem_New.sln" on node 1 (default targets).
+ValidateSolutionConfiguration:
+  Building solution configuration "Release|Any CPU".
+Project "C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\MesTAManagementSystem_New.sln" (1) is building "C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\MesTAManagementSystem_New\MesTAManagementSystem_New.csproj" (2) on node 1 (default targets).
+C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\packages\Microsoft.Extensions.Logging.Abstractions.6.0.0\build\Microsoft.Extensions.Logging.Abstractions.targets(1,1): error MSB4041: The default XML namespace of the project must be the MSBuild XML namespace. If the project is authored in the MSBuild 2003 format, please add xmlns="http://schemas.microsoft.com/developer/msbuild/2003" to the <Project> element. If the project has been authored in the old 1.0 or 1.2 format, please convert it to MSBuild 2003 format. [C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\MesTAManagementSystem_New\MesTAManagementSystem_New.csproj]
+Done Building Project "C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\MesTAManagementSystem_New\MesTAManagementSystem_New.csproj" (default targets) -- FAILED.
+Done Building Project "C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\MesTAManagementSystem_New.sln" (default targets) -- FAILED.
+
+Build FAILED.
+
+"C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\MesTAManagementSystem_New.sln" (default target) (1) ->
+"C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\MesTAManagementSystem_New\MesTAManagementSystem_New.csproj" (default target) (2) ->
+  C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\packages\Microsoft.Extensions.Logging.Abstractions.6.0.0\build\Microsoft.Extensions.Logging.Abstractions.targets(1,1): error MSB4041: The default XML namespace of the project must be the MSBuild XML namespace. If the project is authored in the MSBuild 2003 format, please add xmlns="http://schemas.microsoft.com/developer/msbuild/2003" to the <Project> element. If the project has been authored in the old 1.0 or 1.2 format, please convert it to MSBuild 2003 format. [C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\MesTAManagementSystem_New\MesTAManagementSystem_New.csproj]
