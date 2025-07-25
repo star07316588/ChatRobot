@@ -1,0 +1,6 @@
+Host fa5webd1
+    HostName fa5webd1
+    User devwls
+    IdentityFile ~/.ssh/id_rsa
+    HostKeyAlgorithms +ssh-rsa
+    PubkeyAcceptedAlgorithms +ssh-rsa
