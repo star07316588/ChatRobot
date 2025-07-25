@@ -1,9 +1,4 @@
-+ ssh-copy-id -i /c/Users/Administrator/.ssh/id_rsa.pub devwls@fa5webd1
-/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/c/Users/Administrator/.ssh/id_rsa.pub"
-/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
-
-/usr/bin/ssh-copy-id: ERROR: /c/Users/Administrator/.ssh/config: line 6: Bad configuration option: pubkeyacceptedalgorithms
-ERROR: /c/Users/Administrator/.ssh/config: terminating, 1 bad configuration options
-
++ scp -o StrictHostKeyChecking=no C:/Users/Administrator/AppData/Local/Jenkins/.jenkins/workspace/CloneJsp_Debug/bkms-12/bkms/dist/bkms.war devwls@fa5webd1:/bea/user_projects/domains/dev_domain/servers/AdminServer/upload/tdsplus_samson.war/app
+scp: /bea/user_projects/domains/dev_domain/servers/AdminServer/upload/tdsplus_samson.war/app/bkms.war: Permission denied
 Build step 'Execute shell' marked build as failure
 Finished: FAILURE
