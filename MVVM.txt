@@ -1,0 +1,22 @@
+各角色職責（重點）
+
+View（視圖）
+顯示資料、接收使用者輸入；與 ViewModel 做資料繫結（Binding）。在 ASP.NET MVC 中是 Razor 檢視。
+
+ViewModel（檢視模型）
+只為「頁面」設計的資料模型與狀態（要顯示什麼/輸入什麼），不放商業規則；可含簡單的 UI 邏輯。
+
+Controller（控制器）
+接收路由/HTTP 請求、驗證輸入、呼叫 Services、組合 Model → ViewModel，最後回傳 View。
+
+Model（模型）
+領域實體/DTO/資料結構的總稱：在 Services 與 Repository 間傳遞，在 Controller 中被組合/映射為 ViewModel。
+
+Services（服務）
+業務邏輯的核心：流程控制、交易、一致性檢查、整合其他服務；不處理資料存取細節。
+
+Repository（儲存庫）
+專責資料存取（ORM/SQL 查詢、CRUD），回傳/接收 Model 或 DTO；不放業務規則。
+
+Database（資料庫）
+永久儲存層（SQL/NoSQL）。
