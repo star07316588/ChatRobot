@@ -1,4 +1,5 @@
-+ scp -o StrictHostKeyChecking=no C:/Users/Administrator/AppData/Local/Jenkins/.jenkins/workspace/CloneJsp_Debug/bkms-12/bkms/dist/bkms.war devwls@fa5webd1:/bea/user_projects/domains/dev_domain/servers/AdminServer/upload/tdsplus_samson.war/app
-scp: /bea/user_projects/domains/dev_domain/servers/AdminServer/upload/tdsplus_samson.war/app/bkms.war: Permission denied
++ ssh prodpeis@tstpeis1
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Host key verification failed.
 Build step 'Execute shell' marked build as failure
 Finished: FAILURE
