@@ -1,4 +1,47 @@
-輸入以下path後
-C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe
-出現以下警告訊息
-C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe 不是 Jenkins Controller 上的目錄（但它可能存在於某些 Agent 上）
+Started by user admin
+Running as SYSTEM
+Building in workspace C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release
+The recommended git tool is: NONE
+using credential d0d044b3-a632-4c29-9392-3ea670bb25fd
+ > git.exe rev-parse --resolve-git-dir C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\.git # timeout=10
+Fetching changes from the remote Git repository
+ > git.exe config remote.origin.url http://fabscdp1:3000/BE_MES_GROUP/MesTAManagementSystem_New.git # timeout=10
+Fetching upstream changes from http://fabscdp1:3000/BE_MES_GROUP/MesTAManagementSystem_New.git
+ > git.exe --version # timeout=10
+ > git --version # 'git version 2.15.1.windows.2'
+using GIT_ASKPASS to set credentials 
+ > git.exe fetch --tags --progress -- http://fabscdp1:3000/BE_MES_GROUP/MesTAManagementSystem_New.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git.exe rev-parse "refs/remotes/origin/master^{commit}" # timeout=10
+Checking out Revision 848c1231bbd007785a765ef5ea4e2d585314a837 (refs/remotes/origin/master)
+ > git.exe config core.sparsecheckout # timeout=10
+ > git.exe checkout -f 848c1231bbd007785a765ef5ea4e2d585314a837 # timeout=10
+Commit message: "移除讀SBL_USER_TEMP"
+ > git.exe rev-list --no-walk 848c1231bbd007785a765ef5ea4e2d585314a837 # timeout=10
+Path To MSBuild.exe: C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe
+Executing the command cmd.exe /C " "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe" /p:DeployOnBuild=True /p:Configuration=Release MesTAManagementSystem_New.sln " && exit %%ERRORLEVEL%% from C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release
+[MesTAManagementSystem_New_Release] $ cmd.exe /C " "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe" /p:DeployOnBuild=True /p:Configuration=Release MesTAManagementSystem_New.sln " && exit %%ERRORLEVEL%%
+Microsoft (R) Build Engine version 16.11.6+a918ceb31 for .NET Framework
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Building the projects in this solution one at a time. To enable parallel build, please add the "-m" switch.
+Build started 2025/8/27 下午 05:24:09.
+Project "C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\MesTAManagementSystem_New.sln" on node 1 (default targets).
+ValidateSolutionConfiguration:
+  Building solution configuration "Release|Any CPU".
+Project "C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\MesTAManagementSystem_New.sln" (1) is building "C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\MesTAManagementSystem_New\MesTAManagementSystem_New.csproj" (2) on node 1 (default targets).
+C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\MesTAManagementSystem_New\MesTAManagementSystem_New.csproj(1266,11): error MSB4226: The imported project "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Microsoft\VisualStudio\v16.0\WebApplications\Microsoft.WebApplication.targets" was not found. Also, tried to find "WebApplications\Microsoft.WebApplication.targets" in the fallback search path(s) for $(VSToolsPath) - "C:\Program Files (x86)\MSBuild\Microsoft\VisualStudio\v16.0" . These search paths are defined in "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe.Config". Confirm that the path in the <Import> declaration is correct, and that the file exists on disk in one of the search paths.
+Done Building Project "C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\MesTAManagementSystem_New\MesTAManagementSystem_New.csproj" (default targets) -- FAILED.
+Done Building Project "C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\MesTAManagementSystem_New.sln" (default targets) -- FAILED.
+
+Build FAILED.
+
+"C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\MesTAManagementSystem_New.sln" (default target) (1) ->
+"C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\MesTAManagementSystem_New\MesTAManagementSystem_New.csproj" (default target) (2) ->
+  C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesTAManagementSystem_New_Release\MesTAManagementSystem_New\MesTAManagementSystem_New.csproj(1266,11): error MSB4226: The imported project "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Microsoft\VisualStudio\v16.0\WebApplications\Microsoft.WebApplication.targets" was not found. Also, tried to find "WebApplications\Microsoft.WebApplication.targets" in the fallback search path(s) for $(VSToolsPath) - "C:\Program Files (x86)\MSBuild\Microsoft\VisualStudio\v16.0" . These search paths are defined in "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe.Config". Confirm that the path in the <Import> declaration is correct, and that the file exists on disk in one of the search paths.
+
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:01.02
+Build step 'Build a Visual Studio project or solution using MSBuild' marked build as failure
+Finished: FAILURE
