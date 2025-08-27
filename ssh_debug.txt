@@ -1,1 +1,4 @@
-/p:VisualStudioVersion=10.0 /p:DeployOnBuild=True /p:Configuration=Release
+輸入以下path後
+C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe
+出現以下警告訊息
+C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe 不是 Jenkins Controller 上的目錄（但它可能存在於某些 Agent 上）
