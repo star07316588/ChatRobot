@@ -1,1 +1,50 @@
-[A]System.Web.WebPages.Razor.Configuration.HostSection cannot be cast to [B]System.Web.WebPages.Razor.Configuration.HostSection. Type A originates from 'System.Web.WebPages.Razor, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' in the context 'Default' at location 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\System.Web.WebPages.Razor\v4.0_2.0.0.0__31bf3856ad364e35\System.Web.WebPages.Razor.dll'. Type B originates from 'System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' in the context 'Default' at location 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\vs\2f1ca020\c415fe8\assembly\dl3\bd398967\001be183_af3ad001\System.Web.WebPages.Razor.dll'.
+CREATE OR REPLACE TRIGGER TRG_SINGLE_CONTROL_N2
+  AFTER UPDATE ON FWADMIN.TBL_SINGLE_VALUE_CONTROL
+  FOR EACH ROW
+DECLARE
+  v_error_no      NUMBER;
+  v_error_message VARCHAR2(4000);
+  PRAGMA AUTONOMOUS_TRANSACTION; -- 僅用於錯誤紀錄要獨立提交（可選）
+BEGIN
+  IF :NEW.attribute = 'DOORKEEP' THEN
+    BEGIN
+      UPDATE tds.BA_DESCRIPTION_LIST@PRODTDS.MXIC.COM.TW
+         SET DESCRIP = :NEW.value
+       WHERE TAG = '209' AND ID = '0';
+    EXCEPTION
+      WHEN OTHERS THEN
+        v_error_no      := SQLCODE;
+        v_error_message := SQLERRM;
+        INSERT INTO b2b.tbl_if_log_mes
+          (ACTION, RULENAME, TABLENAME, KEYVALUE, MESSAGE, EXCEPTION, logtime)
+        VALUES ('I', 'TRG_SINGLE_CONTROL_N2', 'TBL_SINGLE_VALUE_CONTROL',
+                'tag=209, attribute=' || :OLD.attribute,
+                SUBSTR(v_error_no || ',' || v_error_message, 1, 512),
+                'tag=209, attribute=' || :OLD.attribute,
+                SYSDATE);
+        COMMIT; -- 只提交錯誤紀錄（因為 Autonomous Transaction）
+        RAISE;
+    END;
+
+  ELSIF :NEW.attribute = 'HUMILOW' THEN
+    BEGIN
+      UPDATE tds.BA_DESCRIPTION_LIST@PRODTDS.MXIC.COM.TW
+         SET DESCRIP = :NEW.value
+       WHERE TAG = '209' AND ID = '1';
+    EXCEPTION
+      WHEN OTHERS THEN
+        v_error_no      := SQLCODE;
+        v_error_message := SQLERRM;
+        INSERT INTO b2b.tbl_if_log_mes
+          (ACTION, RULENAME, TABLENAME, KEYVALUE, MESSAGE, EXCEPTION, logtime)
+        VALUES ('I', 'TRG_SINGLE_CONTROL_N2', 'TBL_SINGLE_VALUE_CONTROL',
+                'tag=209, attribute=' || :OLD.attribute,
+                SUBSTR(v_error_no || ',' || v_error_message, 1, 512),
+                'tag=209, attribute=' || :OLD.attribute,
+                SYSDATE);
+        COMMIT;
+        RAISE;
+    END;
+  END IF;
+END TRG_SINGLE_CONTROL_N2;
+/
