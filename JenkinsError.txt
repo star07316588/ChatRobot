@@ -1,2 +1,27 @@
-ViewModels\System\ChangePassword.cs(24,10): error CS0246: The type or namespace name 'Compare' could not be found (are you missing a using directive or an assembly reference?) [C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesAccMgm_New_Release\MesAccMgm\MesAccMgm.csproj]
-ViewModels\System\ChangePassword.cs(24,10): error CS0104: 'CompareAttribute' is an ambiguous reference between 'System.ComponentModel.DataAnnotations.CompareAttribute' and 'System.Web.Mvc.CompareAttribute' [C:\Users\Administrator\AppData\Local\Jenkins\.jenkins\workspace\MesAccMgm_New_Release\MesAccMgm\MesAccMgm.csproj]
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Web.Mvc;
+
+namespace MesAccMgm.ViewModels.System
+{
+    public class ChangePassword
+    {
+        [DisplayName("User Id")]
+        public string UserId { get; set; }
+
+        [DisplayName("Old Password")]
+        [Required(ErrorMessage = "{0}是必填欄位")]
+        public string OldPassword { get; set; }
+
+        [DisplayName("New Password")]
+        [Required(ErrorMessage = "{0}是必填欄位")]
+        [StringLength(100, MinimumLength = 5, ErrorMessage = "{0}密碼不可少於{2}位")]
+        [RegularExpression(@"^\S*$", ErrorMessage = "{0}密碼不可包含空白")]
+        public string NewPassword { get; set; }
+
+        [DisplayName("Retype Password")]
+        [Required(ErrorMessage = "{0}是必填欄位")]
+        [Compare("NewPassword")]
+        public string RetypePassword { get; set; }
+    }
+}
