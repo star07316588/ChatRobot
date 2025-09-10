@@ -1,100 +1,47 @@
-以下是Oracle Trigger語法的錯誤，目的是當資料表(fwadmin.TBL_SINGLE_VALUE_CONTROL)更新時，需跨一個Database去呼叫function(N2_MES_UPDATE)更新另外一個Table(tds.BA_DESCRIPTION_LIST)
-
-create or replace trigger TRG_SINGLE_CONTROL_N2
-  after update on "FWADMIN"."TBL_SINGLE_VALUE_CONTROL"
-  for each row
-declare
-  v_update        BOOLEAN;
+CREATE OR REPLACE TRIGGER TRG_SINGLE_CONTROL_N2
+  AFTER UPDATE ON FWADMIN.TBL_SINGLE_VALUE_CONTROL
+  FOR EACH ROW
+DECLARE
   v_error_no      NUMBER;
   v_error_message VARCHAR2(4000);
-begin
-    if :new.attribute = 'DOORKEEP' then
-       BEGIN
-          v_update := tds.N2_MESUPDATE@PRODTDS.MXIC.COM.TW('N2','DOORKEEP',:new.value);
+BEGIN
+  IF :NEW.attribute = 'DOORKEEP' THEN
+    BEGIN
+      UPDATE tds.BA_DESCRIPTION_LIST@PRODTDS.MXIC.COM.TW
+         SET DESCRIP = :NEW.value
+       WHERE TAG = '209' AND ID = '0';
+    EXCEPTION WHEN OTHERS THEN
+      v_error_no      := SQLCODE;
+      v_error_message := SQLERRM;
+      INSERT INTO b2b.tbl_if_log_mes
+        (ACTION, RULENAME, TABLENAME, KEYVALUE, MESSAGE, EXCEPTION, logtime)
+      VALUES ('I','TRG_SINGLE_CONTROL_N2','TBL_SINGLE_VALUE_CONTROL',
+              'tag=209, attribute='||:OLD.attribute,
+              SUBSTR(v_error_no||','||v_error_message,1,512),
+              'tag=209, attribute='||:OLD.attribute,
+              SYSDATE);
+      -- 不要 COMMIT；跟主交易一起
+      RAISE;
+    END;
 
-       EXCEPTION
-     	 when others then
-        v_error_no      := SQLCODE;
-        v_error_message := SQLERRM;
-        INSERT INTO b2b.tbl_if_log_mes
-          (ACTION, RULENAME, TABLENAME, KEYVALUE, MESSAGE, EXCEPTION, logtime)
-        VALUES ('I', 'TRG_SINGLE_CONTROL_N2', 'TBL_SINGLE_VALUE_CONTROL', 'tag=209, attribute=' || :old.attribute, SUBSTR(v_error_no || ',' || v_error_message, 1, 512),
-           'tag=209, attribute=' || :old.attribute,
-           sysdate);
-       END;
-    elsif :new.attribute = 'HUMILOW' then
-       BEGIN
-         v_update := tds.N2_MESUPDATE@PRODTDS.MXIC.COM.TW('N2','HUMILOW',:new.value);
-       EXCEPTION
-      when others then
-        v_error_no      := SQLCODE;
-        v_error_message := SQLERRM;
-        INSERT INTO b2b.tbl_if_log_mes
-          (ACTION, RULENAME, TABLENAME, KEYVALUE, MESSAGE, EXCEPTION, logtime)
-        VALUES ('I', 'TRG_SINGLE_CONTROL_N2', 'TBL_SINGLE_VALUE_CONTROL', 'tag=209, attribute=' || :old.attribute, SUBSTR(v_error_no || ',' || v_error_message, 1, 512),
-           'tag=209, attribute=' || :old.attribute,
-           sysdate);
-       END;
-    end if;
-end TRG_SINGLE_CONTROL_N2;
-
-
-以下是串接的Function(跨Database串接)
-
-create or replace function N2_MES_UPDATE(Cagetory IN VARCHAR2, Attribute IN VARCHAR2,Value IN VARCHAR2) return boolean is
-begin
-IF Cagetory = 'N2' THEN
-IF Attribute = 'DOORKEEP' THEN
-UPDATE BA_DESCRIPTION_LIST
-SET DESCRIP = Value
-WHERE TAG = '209' AND ID = '0';
-IF SQL%ROWCOUNT > 0 THEN
-COMMIT;
-RETURN TRUE;
-ELSE
-RETURN FALSE;
-END IF;
-ELSIF Attribute = 'HUMILOW' THEN
-UPDATE BA_DESCRIPTION_LIST
-SET DESCRIP = Value
-WHERE TAG = '209' AND ID = '1';
-IF SQL%ROWCOUNT > 0 THEN
-COMMIT;
-RETURN TRUE;
-ELSE
-RETURN FALSE;
-END IF;
-ELSE
-RETURN FALSE;
-END IF;
-ELSE
-RETURN FALSE;
-END IF;
-EXCEPTION
-WHEN OTHERS THEN
-RETURN FALSE;
-end N2_MES_UPDATE;
-
-Compilation errors for TRIGGER FWQAS.TRG_SINGLE_CONTROL_N2
-
-以下是編譯時出現的錯誤訊息
-
-Error: PLS-00201: identifier 'N2_MESUPDATE@PRODTDS.MXIC.COM.TW' must be declared
-Line: 11
-Text: v_update := tds.N2_MESUPDATE@PRODTDS.MXIC.COM.TW('N2','DOORKEEP',:new.value);
-
-Error: PL/SQL: Statement ignored
-Line: 11
-Text: v_update := tds.N2_MESUPDATE@PRODTDS.MXIC.COM.TW('N2','DOORKEEP',:new.value);
-
-Error: PLS-00201: identifier 'N2_MESUPDATE@PRODTDS.MXIC.COM.TW' must be declared
-Line: 24
-Text: v_update := tds.N2_MESUPDATE@PRODTDS.MXIC.COM.TW('N2','HUMILOW',:new.value);
-
-Error: PL/SQL: Statement ignored
-Line: 24
-Text: v_update := tds.N2_MESUPDATE@PRODTDS.MXIC.COM.TW('N2','HUMILOW',:new.value);
-
-Error: Hint: Value assigned to 'v_update' never used in 'TRG_SINGLE_CONTROL_N2'
-Line: 24
-Text: v_update := tds.N2_MESUPDATE@PRODTDS.MXIC.COM.TW('N2','HUMILOW',:new.value);
+  ELSIF :NEW.attribute = 'HUMILOW' THEN
+    BEGIN
+      UPDATE tds.BA_DESCRIPTION_LIST@PRODTDS.MXIC.COM.TW
+         SET DESCRIP = :NEW.value
+       WHERE TAG = '209' AND ID = '1';
+    EXCEPTION WHEN OTHERS THEN
+      v_error_no      := SQLCODE;
+      v_error_message := SQLERRM;
+      INSERT INTO b2b.tbl_if_log_mes
+        (ACTION, RULENAME, TABLENAME, KEYVALUE, MESSAGE, EXCEPTION, logtime)
+      VALUES ('I','TRG_SINGLE_CONTROL_N2','TBL_SINGLE_VALUE_CONTROL',
+              'tag=209, attribute='||:OLD.attribute,
+              SUBSTR(v_error_no||','||v_error_message,1,512),
+              'tag=209, attribute='||:OLD.attribute,
+              SYSDATE);
+      -- 不要 COMMIT
+      RAISE;
+    END;
+  END IF;
+END TRG_SINGLE_CONTROL_N2;
+/
