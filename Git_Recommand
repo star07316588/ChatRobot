@@ -1,0 +1,136 @@
+下面給你一個「不會誤上其他程式」的實用流程與防呆清單，全部用 Git Extensions 圖形介面就能做到。關鍵觀念是：用**分支（branch）與標籤（tag）**鎖定要發佈的精準提交（commit），並讓部署只吃特定的 tag／分支。
+
+核心原則（Key Ideas）
+
+一次上線只發佈明確的一組 commit，用**發佈分支（release branch）或標籤（tag）**固定它。
+
+部署（deploy）只允許從指定分支/標籤觸發，避免抓到其他未預期的變更。
+
+上線前做**差異比對（diff/compare）與工作樹乾淨（clean working tree）**檢查。
+
+
+推薦流程（Step-by-step）
+
+1. 建立發佈分支（Release Branch）
+
+
+
+在 Git Extensions：Repository → Branches → Create branch…
+
+從 main（或目前線上版本的 tag）切出 release/2025-09-19（名稱自訂）。
+
+目的：把本次要上線的變更關在這條分支，其他開發繼續在 develop/feature 走。
+
+
+2. 僅挑入要上線的變更（Cherry-pick）
+
+
+
+在日誌視圖（Revision graph）選取要上線的 commit，右鍵 Cherry pick selected commit(s) 到 release/*。
+
+若有多個小修，小心挑選需要的提交，避免把未完成功能拉進來。
+
+
+3. 確認工作樹乾淨（Clean Working Tree）
+
+
+
+開 Commit 面板：確定 Unstaged changes 為空（或全部已正確提交）。
+
+有零碎修改就先另外開功能分支（feature branch），不要混在本次發佈分支。
+
+
+4. 比對差異（Diff/Compare）
+
+
+
+對比「現在的 release/*」與「線上版本 tag（例如 prod-2025-09-10）」：
+
+在圖上選兩個節點，右鍵 Compare two commits。
+
+檢查檔案清單與每一個差異（diff）是否全都是本次要上的內容。
+
+
+若你的專案有多解決方案/多專案，特別確認不相關的專案沒被改到。
+
+
+5. 建立發佈標籤（Tag）
+
+
+
+在 release/* 的最後一個提交上右鍵 → Create tag…，命名如 v1.2.3 或 release-2025-09-19。
+
+選**註解標籤（annotated tag）**並填寫變更摘要（changelog）。
+
+
+6. 只從 Tag/Release 分支部署（CI/CD 鎖定）
+
+
+
+在你的部署系統（Jenkins/GitHub Actions/Azure DevOps…）設定：
+
+只允許：當推送 refs/tags/release-*（或 v*）時才觸發部署；
+
+或只允許從 release/* 分支部署。
+
+
+這樣就算 develop 有其他功能合併，也不會被誤上。
+
+
+7. 最終「乾跑」與回溯保險
+
+
+
+做一次**建置乾跑（dry run build）**或測試環境部署，確定產物正確。
+
+上線後把該 tag 再打個**生產標籤（prod-YYYYMMDD）**指向相同 commit，方便回溯/比對。
+
+
+Git Extensions 常用操作提示（UI 對照）
+
+挑提交（Cherry-pick）：在日誌視圖選取 commit → 右鍵 Cherry pick…。
+
+建立/切換分支（Create/Checkout Branch）：工具列或 Repository → Branches。
+
+建立標籤（Create Tag）：在目標 commit 右鍵 → Create tag…。
+
+比對兩個提交（Compare two commits）：框選兩個節點 → 右鍵 Compare two commits。
+
+檢視未追蹤/忽略（Untracked/Ignore）：在 Commit 面板看 Untracked files，確保 .gitignore 正確。
+
+還原（Revert）：若挑錯提交，右鍵該提交 Revert this commit，或在分支上 Reset 回正確點（小心使用）。
+
+
+防呆設計（Process Guardrails）
+
+保護分支（Protected Branches）：把 main/release/* 設為受保護，強制 PR（pull request）+ 審核。
+
+必需 Tag 才能上線：CI 只認 release-*/v* tag。
+
+檔案層級保護：若某些資料夾不應被部署（例如工具腳本、範例），在部署腳本中**白名單（whitelist）**要發佈的檔案/專案。
+
+組件版本鎖定（version pinning）：NuGet/NPM 鎖版本（lockfile），避免上線時拉到不預期依賴。
+
+產物簽章/哈希（artifact checksum）：打包後計算檔案雜湊，再在產線驗證。
+
+
+上線前自檢清單（Pre-flight Checklist）
+
+工作樹乾淨（Clean working tree）✅
+
+在 release/* 分支，僅 cherry-pick 需要的提交✅
+
+跟上一次生產 tag 做過 Compare two commits，差異僅包含預期檔案✅
+
+已建立 release-* 或 v* 的 annotated tag✅
+
+CI/CD 僅從 tag/指定分支部署設定確認✅
+
+測試環境建置/驗證通過✅
+
+
+
+---
+
+如果你願意，我可以依你目前專案的「實際 Git 歷史與檔案結構」幫你列出這次上線的候選 commit 清單與精準差異報告（diff 清單），再產出一份可貼進 Jenkins 的部署條件規則（例如只觸發 refs/tags/release-*）。
+
