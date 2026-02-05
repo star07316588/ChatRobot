@@ -538,4 +538,101 @@
             });
         }
     </script>
+
+            //===================================================================================
+            //  按鈕事件綁定
+            //===================================================================================
+            
+            // [OK 存檔] 按鈕
+            $('#btn-save').click(function () {
+                // 執行存檔，參數 isClose = false
+                saveData(false);
+            });
+
+            // [Close 送件] 按鈕
+            $('#btn-close').click(function () {
+                // 跳出確認視窗，如同 JSP 的 confirm
+                if (confirm('確定要送件結案嗎？送出後將無法修改。')) {
+                    // 執行存檔並結案，參數 isClose = true
+                    saveData(true);
+                }
+            });
+
+            // [Cancel 取消] 按鈕
+            $('#btn-cancel').click(function () {
+                // 取消邏輯：重新載入 Grid 資料 (放棄未存檔的修改)
+                // 這相當於重新按下查詢按鈕，還原到資料庫目前的狀態
+                if (confirm('確定要取消變更並重新載入資料嗎？')) {
+                    $submitButton.click(); 
+                }
+            });
+
+            // ... (原本的 calculateRowScore 與 saveData 函式保持不變) ...
+
 }
+
+<div style="margin-top: 10px; margin-bottom: 20px; text-align: center;">
+    <button id="btn-save" type="button" class="btn btn-primary" style="width: 100px;">
+        OK 存檔
+    </button>
+    
+    <button id="btn-cancel" type="button" class="btn btn-default" style="width: 100px; margin-left: 10px;">
+        Cancel 取消
+    </button>
+    
+    <button id="btn-close" type="button" class="btn btn-danger" style="width: 100px; margin-left: 10px;">
+        Close 送件
+    </button>
+</div>
+
+        function saveData(isClose) {
+            // 1. 強制讓目前正在編輯的 Cell 失去焦點以寫入 Grid data
+            var $grid = $resultTable;
+            var editRowId = $grid.jqGrid('getGridParam', 'selrow');
+            if (editRowId) {
+                $grid.jqGrid('saveCell', editRowId, 'Record'); // 嘗試儲存當前焦點欄位
+                $grid.jqGrid('saveCell', editRowId, 'Comments');
+            }
+            
+            // 2. 取得所有資料
+            var allData = $grid.jqGrid('getRowData');
+            
+            // 3. 準備傳送給後端的資料
+            var postData = {
+                Items: allData,
+                SearchCondition: {
+                    Year: $("#Year").val(),
+                    Month: $("#Month").val(),
+                    Dept_Id: $("#Dept_Id").val(),
+                    Title: $("#Title").val(),
+                    Item: $("#Item").val(),
+                    DetailItem: $("#DetailItem").val()
+                },
+                IsClose: isClose // 傳遞是「存檔(false)」還是「送件(true)」
+            };
+
+            $.ajax({
+                url: '@Url.Action("SaveData")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(postData),
+                beforeSend: function () {
+                    $.blockUI({ message: '資料處理中...' });
+                },
+                success: function (result) {
+                    if (result.success) {
+                        alert(isClose ? '送件結案成功！' : '存檔成功！');
+                        // 成功後重新查詢，刷新畫面
+                        $submitButton.click();
+                    } else {
+                        alert('作業失敗：' + result.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                     alert('發生錯誤: ' + error);
+                },
+                complete: function () {
+                    $.unblockUI();
+                }
+            });
+        }
