@@ -142,5 +142,16 @@ namespace MyPerformanceApp.Controllers
             // 若 Service 沒有回傳 List，在此處呼叫 Repository 補齊 (視架構設計而定)
             // ex: vm.DeptOptions = _service.GetDeptOptions();
         }
+
+        public ActionResult SaveData(SubjectiveResultVM searchInfo)
+        {
+            bool bresult = false;
+            foreach (var data in searchInfo.Data)
+            {
+                bresult = _reportService.SubjectiveSave(data.Emp_Id, data.Year, data.Month, data.Item, data.DetailItem, data.Record, data.Score, data.Comments, data.Title, searchInfo.Data.Count, userId);
+            }
+
+            return Json(new { success = bresult });
+        }
     }
 }
