@@ -1,0 +1,74 @@
+        //===================================================================================
+        //  核心邏輯：資料存檔
+        //===================================================================================
+        function saveData(isClose) {
+            // 1. 確保 Grid 離開編輯狀態 (將正在編輯的 Cell 寫入 local data)
+            var $grid = $resultTable;
+            var editRowId = $grid.jqGrid('getGridParam', 'selrow');
+            if (editRowId) {
+                // 強制儲存當前焦點欄位
+                $grid.jqGrid('saveCell', editRowId, 'Record');
+                $grid.jqGrid('saveCell', editRowId, 'Comments');
+            }
+            
+            // 2. 取得 Grid 所有資料 (這時候只有 Emp_Id, Score, Record, Comments...)
+            var gridRows = $grid.jqGrid('getRowData');
+            
+            // 3. 取得外部查詢條件 (Context)
+            var currentYear = $("#Year").val();
+            var currentMonth = $("#Month").val();
+            var currentDept = $("#Dept_Id").val(); // 若 Controller 需要
+            var currentTitle = $("#Title").val();
+            var currentItem = $("#Item").val();
+            var currentDetailItem = $("#DetailItem").val();
+
+            // 4. [關鍵] 將查詢條件注入到每一筆資料列中
+            // 因為您的 Controller 是用 data.Year, data.Month，所以每一列都要有這些欄位
+            var dataToSend = [];
+            $.each(gridRows, function(index, row) {
+                // 複製一份 row 資料
+                var newRow = $.extend({}, row);
+
+                // 手動補上缺少的欄位
+                newRow.Year = currentYear;
+                newRow.Month = currentMonth;
+                newRow.Title = currentTitle;
+                newRow.Item = currentItem;
+                newRow.DetailItem = currentDetailItem;
+                // newRow.Dept_Id = currentDept; // 視您的 Model 是否需要
+
+                dataToSend.push(newRow);
+            });
+
+            // 5. 準備 Post 物件 (對應 SubjectiveResultVM)
+            // 結構: { Data: [...], IsClose: true/false }
+            var postData = {
+                Data: dataToSend,
+                IsClose: isClose // 建議您的 VM 補上此屬性，以便後端判斷是否為結案
+            };
+
+            $.ajax({
+                url: '@Url.Action("SaveData")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(postData), // 對應參數名稱 searchInfo
+                beforeSend: function () {
+                    $.blockUI({ message: '資料處理中...' });
+                },
+                success: function (result) {
+                    if (result.success) {
+                        alert(isClose ? '送件結案成功！' : '存檔成功！');
+                        // 重新查詢刷新頁面
+                        $submitButton.click();
+                    } else {
+                        alert('作業失敗'); // 若後端沒回傳 message，顯示通用訊息
+                    }
+                },
+                error: function(xhr, status, error) {
+                     alert('發生錯誤: ' + error);
+                },
+                complete: function () {
+                    $.unblockUI();
+                }
+            });
+        }
