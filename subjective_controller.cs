@@ -143,15 +143,29 @@ namespace MyPerformanceApp.Controllers
             // ex: vm.DeptOptions = _service.GetDeptOptions();
         }
 
-        public ActionResult SaveData(SubjectiveResultVM searchInfo)
-        {
-            bool bresult = false;
-            foreach (var data in searchInfo.Data)
-            {
-                bresult = _reportService.SubjectiveSave(data.Emp_Id, data.Year, data.Month, data.Item, data.DetailItem, data.Record, data.Score, data.Comments, data.Title, searchInfo.Data.Count, userId);
-            }
+public ActionResult SaveData(SubjectiveResultVM searchInfo)
+{
+    bool bresult = false;
+    
+    // 1. 執行每一筆的存檔
+    foreach (var data in searchInfo.Data)
+    {
+        // 確保 data 裡面的 Year, Month 等屬性有被 JS 正確填入
+        bresult = _reportService.SubjectiveSave(data.Emp_Id, data.Year, data.Month, data.Item, data.DetailItem, data.Record, data.Score, data.Comments, data.Title, searchInfo.Data.Count, userId);
+    }
 
-            return Json(new { success = bresult });
+    // 2. 若前端傳來 IsClose = true，則執行結案動作
+    if (searchInfo.IsClose && bresult)
+    {
+        // 您可能需要從 Data 中取第一筆來獲得 Year/Month 等資訊
+        var firstRow = searchInfo.Data.FirstOrDefault();
+        if(firstRow != null) 
+        {
+             // 呼叫 Service 執行結案 (更新 Status)
+             // _reportService.CloseSubjective(firstRow.Year, firstRow.Month, ...);
         }
     }
+
+    return Json(new { success = bresult });
 }
+
