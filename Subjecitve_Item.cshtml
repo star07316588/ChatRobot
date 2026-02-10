@@ -1,0 +1,82 @@
+<table class="table table-bordered" style="width: 100%; margin-bottom: 10px; background-color: #fff;">
+    <tbody>
+        <tr>
+            <td rowspan="2" style="width: 25%; vertical-align: middle; text-align: center; background-color: #f5f5f5; font-size: 1.5em; font-weight: bold;">
+                <span id="lblHeadTitle">--</span> 考核
+                <input type="hidden" id="headtitle" name="headtitle">
+            </td>
+
+            <td style="width: 8%; background-color: #f5f5f5; font-weight: bold;">項目</td>
+            <td style="width: 18%;">
+                <span id="lblItemName">--</span>
+            </td>
+            <td colspan="3">
+                <input type="button" class="btn btn-xs btn-info" value="說明" onclick="display_remark('item_remark_div')">
+                <div id="item_remark_div" style="display:none; margin-top: 5px; padding: 5px; border: 1px solid #ddd; background-color: #ffffe0;">
+                    <span id="lblItemRemark"></span>
+                    
+                    <input type="hidden" id="hidWeighting" value="0">
+                    <input type="hidden" id="hidUpperBound" value="0">
+                    <input type="hidden" id="hidLowerBound" value="0">
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td style="width: 8%; background-color: #f5f5f5; font-weight: bold;">細項</td>
+            <td>
+                <span id="lblDetailItemName">--</span>
+            </td>
+            <td colspan="3">
+                <input type="button" class="btn btn-xs btn-info" value="說明" onclick="display_remark('detailitem_remark_div')">
+                <div id="detailitem_remark_div" style="display:none; margin-top: 5px; padding: 5px; border: 1px solid #ddd; background-color: #ffffe0;">
+                    <span id="lblDetailItemRemark"></span>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+// 1. 新增切換顯示的函式 (對應 JSP 的 display_remark)
+function display_remark(divId) {
+    var x = document.getElementById(divId);
+    if (x.style.display === "none") {
+        $(x).fadeIn(); // 加點特效
+    } else {
+        x.style.display = "none";
+    }
+}
+
+// 2. 修改 QueryTable 的 success callback
+$submitButton.click(function () {
+    // ... 前面的 ajax 設定 ...
+    $.ajax({
+        // ...
+        success: function (response) {
+            // --- 填入 Config 資料 ---
+            if (response.Config) {
+                // 文字顯示
+                $('#lblHeadTitle').text(response.Config.HeadTitle);
+                $('#lblItemName').text(response.Config.ItemName);
+                $('#lblDetailItemName').text(response.Config.DetailItemName);
+                
+                // 備註內容 (支援 HTML 格式，如 &quot;)
+                $('#lblItemRemark').html(response.Config.ItemRemark || "無說明");
+                $('#lblDetailItemRemark').html(response.Config.DetailItemRemark || "無說明");
+
+                // 數值與隱藏欄位 (供計算公式使用)
+                $('#hidWeighting').val(response.Config.Weighting);
+                $('#hidUpperBound').val(response.Config.UpperBound);
+                $('#hidLowerBound').val(response.Config.LowerBound);
+            }
+
+            // --- 載入 Grid 資料 ---
+            var gridData = response.Data;
+            $('#hidTotalCount').val(gridData.length);
+            
+            $resultTable.jqGrid('clearGridData').jqGrid('setGridParam', {
+                data: gridData
+            }).trigger('reloadGrid');
+        },
+        // ...
+    });
+});
