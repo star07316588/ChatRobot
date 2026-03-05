@@ -334,3 +334,95 @@ namespace YourProject.Services
         }
     }
 }
+
+/// <summary>
+/// 取得員工基本資料與其擁有的有效證照
+/// </summary>
+private Emp GetEmployeeWithLicenses(SqlConnection conn, SqlTransaction trans, string empId)
+{
+    // 1. 查詢員工基本資料
+    string empSql = @"
+        SELECT emp_id AS EmpId, station_id AS StationId, title AS Title 
+        FROM sbl_emp 
+        WHERE dlt_date IS NULL AND emp_id = @EmpId";
+    
+    var employee = conn.QueryFirstOrDefault<Emp>(empSql, new { EmpId = empId }, trans);
+
+    if (employee != null)
+    {
+        // 2. 查詢該員工的有效證照資料 (完整對應原 Java 的 getLicenceByEmpId)
+        // 注意：這裡將 Oracle 的 sysdate 替換為 SQL Server 的 GETDATE()
+        string licSql = @"
+            SELECT 
+                cer_item_id AS CerItemId, 
+                emp_id AS EmpId, 
+                station_id AS StationId, 
+                licence_type AS LicenceType
+                -- TODO: 如果有其他需要用到的證照欄位，可以在這裡補上並加上 AS 別名
+            FROM sbl_licence 
+            WHERE valid_date >= GETDATE() 
+              AND dlt_date IS NULL 
+              AND licence_type = 'CL' 
+              AND emp_id = @EmpId 
+              AND station_id = @StationId";
+        
+        // Dapper 會將結果轉為 Licence 物件的集合
+        var licenceList = conn.Query<Licence>(licSql, new { EmpId = empId, StationId = employee.StationId }, trans);
+
+        // 轉為 Dictionary，Key = CerItemId, Value = Licence 物件本身 (精確重現原 map.put 邏輯)
+        employee.Licenses = licenceList.ToDictionary(lic => lic.CerItemId, lic => lic);
+    }
+
+    return employee;
+}
+
+/// <summary>
+/// 計算單一子項目的獎金 (簽名檔也要跟著更新，Dictionary 的 Value 變成 Licence 物件)
+/// </summary>
+private BonusItem DoCalculateBonus(SqlConnection conn, SqlTransaction trans, Dictionary<string, Licence> licenses, BonusItem item)
+{
+    BonusItem calculatedItem = new BonusItem
+    {
+        ItemId = item.ItemId,
+        ItemName = item.ItemName,
+        AGrade = 0,
+        BGrade = 0
+    };
+
+    // 判斷該員工是否擁有對應的 cer_item_id 證照
+    if (licenses != null && licenses.ContainsKey(item.RequiredLicenseId))
+    {
+        // 你甚至可以從 value 中取用該證照的詳細資訊，例如：
+        // Licence myLicence = licenses[item.RequiredLicenseId];
+        
+        calculatedItem.AGrade = item.BaseAGrade; 
+        calculatedItem.BGrade = item.BaseBGrade;
+    }
+
+    return calculatedItem;
+}
+
+namespace YourProject.Services
+{
+    public class Emp
+    {
+        public string EmpId { get; set; }
+        public string StationId { get; set; }
+        public string Title { get; set; }
+        
+        // 將原本的 Dictionary<string, string> 改為 Dictionary<string, Licence>
+        public Dictionary<string, Licence> Licenses { get; set; } = new Dictionary<string, Licence>();
+    }
+
+    // 新增：完整對應 sbl_Licence 資料表的實體類別
+    public class Licence
+    {
+        public string CerItemId { get; set; } // 證照項目 ID (作為 Dictionary 的 Key)
+        public string EmpId { get; set; }
+        public string StationId { get; set; }
+        public string LicenceType { get; set; }
+        // 依照需求可再擴充 ValidDate 等欄位
+    }
+    
+    // ... (保留原本的 BonusData, BonusItem, BonusHistory)
+}
