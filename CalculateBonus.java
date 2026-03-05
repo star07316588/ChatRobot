@@ -140,3 +140,21 @@
             }
         }
     }
+
+
+  public static HashMap getLicenceByEmpId(Connection conn,String emp_id,String station_id) throws Exception{
+      StringBuffer sql = new StringBuffer();
+      //sql.append("SELECT * from sbl_Licence where valid_date >= sysdate and dlt_date is null ");//LAI-MARK-20060329
+      sql.append("SELECT * from sbl_Licence where valid_date >= sysdate and dlt_date is null and licence_type='CL' ");//LAI-ADD-20060329
+      sql.append("and emp_id ='" + emp_id +"' ");
+      sql.append("and station_id ='" + station_id +"' ");
+      System.out.println(sql);
+      Licence[] lc = getLicenceBySql(conn,sql.toString());
+      HashMap map = new HashMap();
+      if(lc!=null && lc.length>0){
+          for(int i=0;i<lc.length;i++){
+              map.put(lc[i].getCer_item_id(),lc[i]);
+          }
+      }
+    return map;
+  }
