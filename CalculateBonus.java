@@ -158,3 +158,27 @@
       }
     return map;
   }
+
+    public void generateItems(Connection conn)throws Exception{
+        String sql = "Select * from sbl_bonus_item where data_id = '" + id + "'";
+        System.out.println(sql);
+        //Added by Jack on 2023/08/03 <Start>
+        //----- <2> 將完整的 SQL insert into Rbl_Confidential_SysLog.
+        if (this.sUserID!=null && this.sExecFunction!=null & this.sPlatform!=null){
+  	  		int check_list = BonusService.insertConfidential_SysLog(this.sPlatform, this.sUserID, this.sExecFunction, sql);
+        }
+        //Added by Jack on 2023/08/03 <End>
+        ArrayList ls = BonusService.getObjectArrayBySql(conn,sql, BonusItem.class);
+        this.setBonusItems((BonusItem[]) ls.toArray(new BonusItem[0]));
+        if(this.bonusItems!=null && this.bonusItems.length>0){
+            for(int i=0;i<this.bonusItems.length;i++){
+            	//Added by Jack on 2023/08/02 <Start>
+            	this.bonusItems[i].setsUserID(this.sUserID);
+            	this.bonusItems[i].setPlatform(this.sPlatform);
+            	this.bonusItems[i].setExecFunction(this.sExecFunction);
+            	//Added by Jack on 2023/08/02 <End>
+                this.bonusItems[i].generateMainLicence(conn);
+                this.bonusItems[i].generateSubLicence(conn);
+            }
+        }
+    }
