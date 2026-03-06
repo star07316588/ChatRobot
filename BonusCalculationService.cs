@@ -589,3 +589,94 @@ namespace YourProject.Services
         // 依照資料表實際欄位擴充...
     }
 }
+
+namespace YourProject.Services
+{
+    public class BonusItem
+    {
+        public string Id { get; set; } 
+        public string DataId { get; set; } 
+        public string ItemId { get; set; }
+        public string ItemName { get; set; }
+        
+        public int BaseAGrade { get; set; }
+        public int BaseBGrade { get; set; }
+
+        public int AGrade { get; set; }
+        public int BGrade { get; set; }
+
+        // 稽核用屬性
+        public string SUserID { get; set; }
+        public string SPlatform { get; set; }
+        public string SExecFunction { get; set; }
+
+        // 修改：因為撈出來的只有 cer_item_id，直接用 List<string> 儲存即可
+        public List<string> MainLicences { get; set; } = new List<string>();
+        public List<string> SubLicences { get; set; } = new List<string>();
+    }
+}
+
+        /// <summary>
+        /// 取得該獎金項目的證照要求 (整合主/副證照查詢邏輯)
+        /// </summary>
+        /// <param name="tableName">資料表名稱 (必須為 sbl_bonus_mlicence 或 sbl_bonus_slicence)</param>
+        private List<string> GetLicenceItemIds(SqlConnection conn, SqlTransaction trans, string tableName, string dataId, string itemId)
+        {
+            // 1. 白名單防護：因為資料表名稱無法參數化，必須嚴格限制傳入的值以防止 SQL Injection
+            if (tableName != "sbl_bonus_mlicence" && tableName != "sbl_bonus_slicence")
+            {
+                throw new ArgumentException("無效的資料表名稱");
+            }
+
+            // 2. 組裝 SQL (將 Table Name 寫入，其餘條件參數化)
+            string sql = $"SELECT cer_item_id FROM {tableName} WHERE data_id = @DataId AND item_id = @ItemId";
+
+            // 3. 實作 Jack 的 Rbl_Confidential_SysLog 紀錄
+            if (!string.IsNullOrEmpty(_sUserID) && !string.IsNullOrEmpty(_sExecFunction) && !string.IsNullOrEmpty(_sPlatform))
+            {
+                // 為了稽核紀錄的完整性，我們將實際的值拼湊進 Log 字串中 (這僅用於 Log，不會拿去執行)
+                string logSqlContent = $"Select cer_item_id from {tableName} where data_id = '{dataId}' and item_id = '{itemId}'";
+                InsertConfidentialSysLog(conn, trans, _sPlatform, _sUserID, _sExecFunction, logSqlContent);
+            }
+
+            // 4. 執行查詢
+            // Dapper 的 Query<string> 會自動把單一欄位 (cer_item_id) 的結果轉成 List<string>
+            return conn.Query<string>(sql, new { DataId = dataId, ItemId = itemId }, trans).ToList();
+        }
+
+        /// <summary>
+        /// 取得「累加法」的獎金設定資料與其子項目 (更新版)
+        /// </summary>
+        private List<BonusData> GetAccumulationBonusData(SqlConnection conn, SqlTransaction trans)
+        {
+            // ... (前面的 dataSql 查詢邏輯不變) ...
+
+            string itemSql = "SELECT * FROM sbl_bonus_item WHERE data_id = @DataId";
+
+            foreach (var data in bonusDataList)
+            {
+                // 紀錄 BonusItem 查詢的稽核 Log
+                if (!string.IsNullOrEmpty(_sUserID) && !string.IsNullOrEmpty(_sExecFunction) && !string.IsNullOrEmpty(_sPlatform))
+                {
+                    InsertConfidentialSysLog(conn, trans, _sPlatform, _sUserID, _sExecFunction, itemSql + $" (DataId={data.Id})");
+                }
+
+                // 取得 Items
+                var items = conn.Query<BonusItem>(itemSql, new { DataId = data.Id }, trans).ToList();
+
+                foreach (var item in items)
+                {
+                    item.SUserID = _sUserID;
+                    item.SPlatform = _sPlatform;
+                    item.SExecFunction = _sExecFunction;
+
+                    // 這裡呼叫我們剛剛寫好的整合方法！
+                    item.MainLicences = GetLicenceItemIds(conn, trans, "sbl_bonus_mlicence", data.Id, item.Id);
+                    item.SubLicences  = GetLicenceItemIds(conn, trans, "sbl_bonus_slicence", data.Id, item.Id);
+                }
+
+                data.BonusItems = items;
+            }
+
+            return bonusDataList;
+        }
