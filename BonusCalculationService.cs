@@ -426,3 +426,166 @@ namespace YourProject.Services
     
     // ... (保留原本的 BonusData, BonusItem, BonusHistory)
 }
+
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using Dapper;
+
+namespace YourProject.Services
+{
+    public partial class BonusCalculationService
+    {
+        private readonly string _connectionString;
+        
+        // 新增：為了 Jack 在 2023/08/03 加上的稽核需求，注入執行環境資訊
+        private readonly string _sUserID;
+        private readonly string _sPlatform;
+        private readonly string _sExecFunction;
+
+        public BonusCalculationService(string connectionString, string sUserID, string sPlatform, string sExecFunction)
+        {
+            _connectionString = connectionString;
+            _sUserID = sUserID;
+            _sPlatform = sPlatform;
+            _sExecFunction = sExecFunction;
+        }
+
+        // ... (保留先前的 CalculateSingleEmployeeBonus 與 GetEmployeeWithLicenses) ...
+
+        /// <summary>
+        /// 取得「累加法」的獎金設定資料與其子項目 (更新版)
+        /// </summary>
+        private List<BonusData> GetAccumulationBonusData(SqlConnection conn, SqlTransaction trans)
+        {
+            // 1. 取得主檔 (需確保 Select 包含 id / data_id)
+            string dataSql = @"
+                SELECT 
+                    id AS Id, 
+                    station_id AS StationId, 
+                    title_id AS TitleId, 
+                    bonus_mode AS BonusMode, 
+                    bonus_limit AS BonusLimit 
+                FROM sbl_bonus_data 
+                WHERE dlt_date IS NULL AND bonus_mode = '累加法'";
+
+            var bonusDataList = conn.Query<BonusData>(dataSql, null, trans).ToList();
+
+            // 2. 取得各主檔對應的子項目 (對應原本 Java 的 generateItems)
+            string itemSql = "SELECT * FROM sbl_bonus_item WHERE data_id = @DataId";
+
+            foreach (var data in bonusDataList)
+            {
+                // ----- <2> 實作 Jack 的 Rbl_Confidential_SysLog 紀錄 -----
+                if (!string.IsNullOrEmpty(_sUserID) && !string.IsNullOrEmpty(_sExecFunction) && !string.IsNullOrEmpty(_sPlatform))
+                {
+                    // 在 Dapper 中，我們記錄帶有參數的 SQL 語法，這比 Java 原本的字串拼接更安全
+                    InsertConfidentialSysLog(conn, trans, _sPlatform, _sUserID, _sExecFunction, itemSql + $" (DataId={data.Id})");
+                }
+
+                // 取得 Items
+                var items = conn.Query<BonusItem>(itemSql, new { DataId = data.Id }, trans).ToList();
+
+                foreach (var item in items)
+                {
+                    // 寫入環境變數
+                    item.SUserID = _sUserID;
+                    item.SPlatform = _sPlatform;
+                    item.SExecFunction = _sExecFunction;
+
+                    // 取得主/副證照設定 (需額外實作的 TODO)
+                    item.MainLicences = GenerateMainLicence(conn, trans, item.Id);
+                    item.SubLicences = GenerateSubLicence(conn, trans, item.Id);
+                }
+
+                data.BonusItems = items;
+            }
+
+            return bonusDataList;
+        }
+
+        /// <summary>
+        /// 寫入機密系統日誌
+        /// </summary>
+        private void InsertConfidentialSysLog(SqlConnection conn, SqlTransaction trans, string platform, string userId, string execFunction, string sqlString)
+        {
+            string logSql = @"
+                INSERT INTO Rbl_Confidential_SysLog (Platform, UserID, ExecFunction, SqlContent, LogTime) 
+                VALUES (@Platform, @UserID, @ExecFunction, @SqlContent, GETDATE())";
+
+            conn.Execute(logSql, new 
+            { 
+                Platform = platform, 
+                UserID = userId, 
+                ExecFunction = execFunction, 
+                SqlContent = sqlString 
+            }, trans);
+        }
+
+        /// <summary>
+        /// 取得該獎金項目的主證照要求
+        /// </summary>
+        private List<LicenceRequirement> GenerateMainLicence(SqlConnection conn, SqlTransaction trans, string bonusItemId)
+        {
+            // TODO: 實作 "SELECT * FROM sbl_bonus_main_licence WHERE item_id = @ItemId"
+            return new List<LicenceRequirement>();
+        }
+
+        /// <summary>
+        /// 取得該獎金項目的副證照要求
+        /// </summary>
+        private List<LicenceRequirement> GenerateSubLicence(SqlConnection conn, SqlTransaction trans, string bonusItemId)
+        {
+            // TODO: 實作 "SELECT * FROM sbl_bonus_sub_licence WHERE item_id = @ItemId"
+            return new List<LicenceRequirement>();
+        }
+    }
+}
+
+namespace YourProject.Services
+{
+    public class BonusData
+    {
+        public string Id { get; set; } // 新增：對應 sbl_bonus_data 的 PK (data_id)
+        public string StationId { get; set; }
+        public string TitleId { get; set; }
+        public string BonusMode { get; set; }
+        public int BonusLimit { get; set; }
+        
+        public List<BonusItem> BonusItems { get; set; } = new List<BonusItem>();
+    }
+
+    public class BonusItem
+    {
+        public string Id { get; set; } // 新增：BonusItem 本身的 PK
+        public string DataId { get; set; } // 新增：對應 BonusData 的 FK
+        public string ItemId { get; set; }
+        public string ItemName { get; set; }
+        
+        // 基礎設定獎金
+        public int BaseAGrade { get; set; }
+        public int BaseBGrade { get; set; }
+
+        // 實際計算後的結果
+        public int AGrade { get; set; }
+        public int BGrade { get; set; }
+
+        // 稽核用屬性 (由 Jack 新增)
+        public string SUserID { get; set; }
+        public string SPlatform { get; set; }
+        public string SExecFunction { get; set; }
+
+        // 存放主副證照的集合
+        public List<LicenceRequirement> MainLicences { get; set; } = new List<LicenceRequirement>();
+        public List<LicenceRequirement> SubLicences { get; set; } = new List<LicenceRequirement>();
+    }
+
+    // 新增：用來存放主/副證照設定的類別
+    public class LicenceRequirement
+    {
+        public string ItemId { get; set; }
+        public string LicenceId { get; set; }
+        // 依照資料表實際欄位擴充...
+    }
+}
