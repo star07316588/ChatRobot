@@ -301,3 +301,54 @@
     	sReturn[1] = sNLBonusLimit;
     	return sReturn; 
     }
+
+
+    public void SaveToDB(Connection conn){
+        try{
+            if(this.selectCount(conn)>0){
+                this.update(conn);
+            }else{
+                this.insert(conn);
+            }
+        }catch(Exception ex){
+            DBConnection.rollback(conn);
+        }finally{
+            DBConnection.commit(conn);
+        }
+    }
+
+    public void insert(Connection conn)throws Exception{
+        HashMap value = new HashMap();
+        this.setId(BonusService.getSEQNumberString(conn,"sbl_bonus_history_seq"));
+        value.put("id", this.id);
+        value.put("emp_id", this.emp_id);
+        value.put("date_month", this.date_month);
+        value.put("totalbonus", this.totalBonus);
+        value.put("crt_date", new java.sql.Timestamp(System.currentTimeMillis()));
+        SQLStem.insert(conn, this.table, value);
+        BonusItem[] items = this.getBonusItems();
+        if (items != null && items.length > 0) {
+            for (int i = 0; i < items.length; i++) {
+                items[i].setHistory_id(this.id);
+                items[i].SaveToHistoryDB(conn);
+            }
+        }
+    }
+
+    public void update(Connection conn)throws Exception{
+        this.QueryBonusHistoryId(conn,this.getEmp_id(),this.getDate_month());
+        HashMap value = new HashMap();
+        value.put("totalbonus", this.totalBonus);
+        value.put("upt_date", new java.sql.Timestamp(System.currentTimeMillis()));
+        HashMap condition = new HashMap();
+        condition.put("emp_id", this.emp_id);
+        condition.put("date_month", this.date_month);
+        SQLStem.update(conn,this.table, value, condition);
+        BonusItem[] items = this.getBonusItems();
+        if (items != null && items.length > 0) {
+            for (int i = 0; i < items.length; i++) {
+                items[i].setHistory_id(this.id);
+                items[i].SaveToHistoryDB(conn);
+            }
+        }
+    }
