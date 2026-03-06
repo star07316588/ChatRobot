@@ -680,3 +680,55 @@ namespace YourProject.Services
 
             return bonusDataList;
         }
+
+/// <summary>
+/// 計算單一子項目的獎金 (根據員工擁有的證照與項目的主/副證照要求進行比對)
+/// </summary>
+private BonusItem DoCalculateBonus(SqlConnection conn, SqlTransaction trans, Dictionary<string, Licence> employeeLicenses, BonusItem item)
+{
+    // 預設該項目計算結果為 0
+    BonusItem calculatedItem = new BonusItem
+    {
+        ItemId = item.ItemId,
+        ItemName = item.ItemName,
+        AGrade = 0,
+        BGrade = 0
+    };
+
+    // 如果員工沒有任何證照，直接回傳 0 元
+    if (employeeLicenses == null || !employeeLicenses.Any())
+    {
+        return calculatedItem;
+    }
+
+    // ---------------------------------------------------------
+    // 1. 判斷主證照 (A Grade)
+    // 邏輯：檢查員工的證照清單 (Keys) 中，是否包含該獎金項目的「任何一張」主證照
+    // ---------------------------------------------------------
+    if (item.MainLicences != null && item.MainLicences.Any())
+    {
+        // .Any() 會走訪 MainLicences，只要有任何一個 mainLic 存在於 employeeLicenses 字典中，就回傳 true
+        bool hasMainLicence = item.MainLicences.Any(mainLic => employeeLicenses.ContainsKey(mainLic));
+        
+        if (hasMainLicence)
+        {
+            calculatedItem.AGrade = item.BaseAGrade; // 給予主證照對應的 A 級獎金
+        }
+    }
+
+    // ---------------------------------------------------------
+    // 2. 判斷副證照 (B Grade)
+    // 邏輯：檢查員工的證照清單 (Keys) 中，是否包含該獎金項目的「任何一張」副證照
+    // ---------------------------------------------------------
+    if (item.SubLicences != null && item.SubLicences.Any())
+    {
+        bool hasSubLicence = item.SubLicences.Any(subLic => employeeLicenses.ContainsKey(subLic));
+        
+        if (hasSubLicence)
+        {
+            calculatedItem.BGrade = item.BaseBGrade; // 給予副證照對應的 B 級獎金
+        }
+    }
+
+    return calculatedItem;
+}
