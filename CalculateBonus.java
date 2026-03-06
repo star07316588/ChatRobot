@@ -182,3 +182,42 @@
             }
         }
     }
+
+    public void generateMainLicence(Connection conn)throws Exception{
+    	//Created by Jack on 2023/08/01 <b>先Insert Rbl_Confidential_SysLog, 再呼叫原本的 queryBonusData(String station, String title, String mode) <Start>
+    	if(this.sUserID != null && this.sExecFunction != null && this.sPlatform != null){
+            BonusLicence bean = new BonusLicence(conn,this.data_id,this.id,"sbl_bonus_mlicence", sPlatform, sUserID, sExecFunction);
+            this.setMLicence(bean);
+    	//Created by Jack on 2023/08/01 <b>先Insert Rbl_Confidential_SysLog, 再呼叫原本的 queryBonusData(String station, String title, String mode) <End>
+    	}else{
+	        BonusLicence bean = new BonusLicence(conn,this.data_id,this.id,"sbl_bonus_mlicence");
+	        this.setMLicence(bean);
+    	}
+    }
+
+    public void generateSubLicence(Connection conn)throws Exception{
+    	//Created by Jack on 2023/08/01 <b>先Insert Rbl_Confidential_SysLog, 再呼叫原本的 queryBonusData(String station, String title, String mode) <Start>
+    	if(this.sUserID != null && this.sExecFunction != null && this.sPlatform != null){
+            BonusLicence bean = new BonusLicence(conn,this.data_id,this.id,"sbl_bonus_slicence", sPlatform, sUserID, sExecFunction);
+            this.setSLicence(bean);
+    	//Created by Jack on 2023/08/01 <b>先Insert Rbl_Confidential_SysLog, 再呼叫原本的 queryBonusData(String station, String title, String mode) <End>
+    	}else{
+	        BonusLicence bean = new BonusLicence(conn,this.data_id,this.id,"sbl_bonus_slicence");
+	        this.setSLicence(bean);
+        }
+    }
+
+    public BonusLicence(Connection conn,String data_id,String item_id,String table, String sPlatform, String sUserID, String sExecFunction) throws Exception {
+        this.table=table;
+        this.data_id=data_id;
+        this.item_id=item_id;
+        String sql = "Select cer_item_id from "+table+" where data_id = '"+data_id+"' and item_id = '"+item_id+"'";
+        List rs = BonusService.getSingleColumnDataBySql(conn,sql);
+        if(rs!=null && rs.size()>0){
+            this.setCer_item_id((String[]) rs.toArray(new String[0]));
+        }
+        //Added by Jack on 2023/08/03 <Start>
+        //----- <2> 將完整的 SQL insert into Rbl_Confidential_SysLog.
+  		int check_list = BonusService.insertConfidential_SysLog(sPlatform, sUserID, sExecFunction, sql);
+        //Added by Jack on 2023/08/03 <End>
+    }
