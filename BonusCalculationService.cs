@@ -732,3 +732,60 @@ private BonusItem DoCalculateBonus(SqlConnection conn, SqlTransaction trans, Dic
 
     return calculatedItem;
 }
+
+        /// <summary>
+        /// 抓取必要執照資訊 (ReqNo:M200810044)
+        /// 邏輯：查詢該員工「缺少」的必要證照數量，以及必要證照未齊全時的獎金上限
+        /// </summary>
+        /// <returns>回傳陣列: [0] = 缺少的必要證照數量 ("0" 代表已全部取得), [1] = 必要執照獎金上限</returns>
+        private string[] GetNLBonusLimit(SqlConnection conn, SqlTransaction trans, string empId, string stationId, string titleId, string bonusMode)
+        {
+            // 預設回傳值：缺少 0 張 (已全部取得)，上限 0
+            string[] result = new string[] { "0", "0" };
+
+            // 1. 取得 DataId 與必要執照獎金上限 (nl_bonus_limit)
+            string dataSql = @"
+                SELECT id AS DataId, nl_bonus_limit AS NlBonusLimit 
+                FROM sbl_bonus_data 
+                WHERE station_id = @StationId 
+                  AND title_id = @TitleId 
+                  AND bonus_mode = @BonusMode";
+
+            // Dapper 允許我們動態對應匿名類別，這裡用 dynamic 接取單筆結果
+            var dataInfo = conn.QueryFirstOrDefault(dataSql, new { StationId = stationId, TitleId = titleId, BonusMode = bonusMode }, trans);
+
+            if (dataInfo == null)
+            {
+                return result; // 找不到設定，直接回傳預設值
+            }
+
+            string dataId = dataInfo.DataId.ToString();
+            result[1] = dataInfo.NlBonusLimit?.ToString() ?? "0";
+
+            // 2. 計算「缺少」的必要證照數量 (NLCount)
+            // 將原本 Oracle 的 (+) Outer Join 改寫為標準的 ANSI SQL (NOT EXISTS)
+            // 語意：從「必要證照需求表(a)」中，挑出「員工有效證照表(b)」裡沒有的項目，然後計算數量
+            string countSql = @"
+                SELECT COUNT(*) 
+                FROM sbl_bonus_nlicence a
+                WHERE a.data_id = @DataId
+                  AND NOT EXISTS (
+                      SELECT 1 
+                      FROM sbl_licence b 
+                      WHERE b.cer_item_id = a.cer_item_id
+                        AND b.emp_id = @EmpId 
+                        AND b.station_id = @StationId 
+                        AND b.licence_type = 'CL' 
+                        AND b.valid_date > GETDATE() /* 如果實際底層還是 Oracle，請將 GETDATE() 改回 SYSDATE */
+                        AND b.dlt_user IS NULL 
+                        AND b.dlt_date IS NULL
+                  )";
+
+            // ExecuteScalar 專門用來取得單一值 (例如 COUNT 的結果)
+            int missingCount = conn.ExecuteScalar<int>(countSql, new { DataId = dataId, EmpId = empId, StationId = stationId }, trans);
+            
+            result[0] = missingCount.ToString();
+
+            return result;
+        }
+
