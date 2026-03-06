@@ -221,3 +221,83 @@
   		int check_list = BonusService.insertConfidential_SysLog(sPlatform, sUserID, sExecFunction, sql);
         //Added by Jack on 2023/08/03 <End>
     }
+
+
+    public String[] getNLBonusLimit(String sEmpId,String sStation_Id,String sTitle_id,String sBonus_Mode){    	
+    	String[] sReturn = new String[2];
+    	Connection conn = null;
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	String sSql = null;
+    	String sData_Id = "";
+    	String sNLCount = "";
+    	String sNLBonusLimit = "";    	
+    	try{
+    		conn = DBConnection.getConnection();
+    		sSql = "select id,nl_bonus_limit from sbl_bonus_data "+
+    			   "where station_id=? and "+
+    			         "title_id=? and "+
+    			         "bonus_mode=?";
+    		pstmt = conn.prepareStatement(sSql);
+    		pstmt.setString(1, sStation_Id);
+    		pstmt.setString(2, sTitle_id);
+    		pstmt.setString(3, sBonus_Mode);
+    		rs = pstmt.executeQuery();
+    		if(rs.next()){
+    			sData_Id = rs.getString("id");
+    			sNLBonusLimit = rs.getString("nl_bonus_limit");
+    		}
+    		rs.close();
+    		pstmt.close();
+    		
+    		sSql = "select count(*) NLCount "+
+    			   "from (select cer_item_id from sbl_bonus_nlicence sbn where sbn.data_id=?) a,"+
+    					"(select * from sbl_licence sl where sl.emp_id=? and sl.station_id=? and sl.licence_type='CL' and sl.valid_date>sysdate and sl.dlt_user is null and sl.dlt_date is null) b "+
+    			   "where a.cer_item_id = b.cer_item_id(+) and "+
+    			   		 "b.cer_item_id is null";
+    		pstmt = conn.prepareStatement(sSql);
+    		pstmt.setString(1,sData_Id);
+    		pstmt.setString(2,sEmpId);
+    		pstmt.setString(3,sStation_Id);
+    		rs = pstmt.executeQuery();
+    		if(rs.next()){
+    			sNLCount = rs.getString("NLCount");
+    		}
+    		rs.close();
+    		pstmt.close();
+    	}catch(SQLException sqle){
+    		sqle.printStackTrace();
+    		try{
+	    		if(rs!=null){
+	    			rs.close();
+	    		}
+	    		if(pstmt!=null){
+	    			pstmt.close();
+	    		}
+	    		if(conn!=null){
+	    			conn.close();
+	    		}    		
+    		}catch(SQLException sqle1){
+    			sqle1.printStackTrace();
+    		}    		
+    	}catch(Exception ex){
+    		ex.printStackTrace();
+    	}finally{
+    		try{
+    			if(rs!=null){
+    				rs.close();
+    			}
+    			if(pstmt!=null){
+    				pstmt.close();
+    			}
+    			if(conn!=null){
+    				conn.close();
+    			}
+    		}catch(SQLException sqle){
+    			sqle.printStackTrace();
+    		}
+    	}
+    	sReturn[0] = sNLCount;
+    	sReturn[1] = sNLBonusLimit;
+    	return sReturn; 
+    }
