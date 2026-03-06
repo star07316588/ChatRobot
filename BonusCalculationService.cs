@@ -789,3 +789,126 @@ private BonusItem DoCalculateBonus(SqlConnection conn, SqlTransaction trans, Dic
             return result;
         }
 
+
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using Dapper;
+
+namespace YourProject.Services
+{
+    public class BonusHistory
+    {
+        public string Id { get; set; } // 對應 Java 的 this.id
+        public string EmpId { get; set; }
+        public string DateMonth { get; set; }
+        public int TotalBonus { get; set; }
+        
+        public List<BonusItem> Items { get; set; } = new List<BonusItem>();
+
+        /// <summary>
+        /// 儲存主檔與明細到資料庫 (完全依賴外層傳入的 SqlTransaction，內部不呼叫 Commit/Rollback)
+        /// </summary>
+        public void SaveToDB(SqlConnection conn, SqlTransaction trans)
+        {
+            // 1. 判斷資料是否存在 (對應原 selectCount 與 QueryBonusHistoryId)
+            string checkSql = "SELECT id FROM sbl_bonus_history WHERE emp_id = @EmpId AND date_month = @DateMonth";
+            var existingId = conn.QueryFirstOrDefault<string>(checkSql, new { EmpId = this.EmpId, DateMonth = this.DateMonth }, trans);
+
+            if (!string.IsNullOrEmpty(existingId))
+            {
+                // 資料存在，走 Update 流程
+                this.Id = existingId;
+                Update(conn, trans);
+            }
+            else
+            {
+                // 資料不存在，走 Insert 流程
+                Insert(conn, trans);
+            }
+
+            // 儲存子項目明細 (對應 items[i].SaveToHistoryDB)
+            SaveItems(conn, trans);
+        }
+
+        private void Insert(SqlConnection conn, SqlTransaction trans)
+        {
+            // 取得 Sequence 序號 (對應原 BonusService.getSEQNumberString)
+            // 注意：如果你們在 SQL Server 是用自動遞增欄位(IDENTITY)，這行就不需要，並在 INSERT 後用 SCOPE_IDENTITY() 取回 ID。
+            this.Id = GetSequenceNumber(conn, trans, "sbl_bonus_history_seq");
+
+            string sql = @"
+                INSERT INTO sbl_bonus_history (id, emp_id, date_month, totalbonus, crt_date) 
+                VALUES (@Id, @EmpId, @DateMonth, @TotalBonus, GETDATE())"; // C# 中用 GETDATE() 取代原本的 java.sql.Timestamp
+
+            conn.Execute(sql, new 
+            { 
+                Id = this.Id, 
+                EmpId = this.EmpId, 
+                DateMonth = this.DateMonth, 
+                TotalBonus = this.TotalBonus 
+            }, trans);
+        }
+
+        private void Update(SqlConnection conn, SqlTransaction trans)
+        {
+            string sql = @"
+                UPDATE sbl_bonus_history 
+                SET totalbonus = @TotalBonus, 
+                    upt_date = GETDATE() 
+                WHERE id = @Id";
+
+            conn.Execute(sql, new 
+            { 
+                TotalBonus = this.TotalBonus, 
+                Id = this.Id 
+            }, trans);
+        }
+
+        /// <summary>
+        /// 儲存子項目明細 (取代原本散落在 BonusItem 裡的 SaveToHistoryDB)
+        /// </summary>
+        private void SaveItems(SqlConnection conn, SqlTransaction trans)
+        {
+            if (Items == null || !Items.Any()) return;
+
+            // 針對明細，最安全且具冪等性 (Idempotent) 的做法是先檢查再決定 Insert/Update
+            foreach (var item in Items)
+            {
+                string checkItemSql = "SELECT COUNT(1) FROM sbl_bonus_history_item WHERE history_id = @HistoryId AND item_id = @ItemId";
+                int count = conn.ExecuteScalar<int>(checkItemSql, new { HistoryId = this.Id, ItemId = item.ItemId }, trans);
+
+                if (count > 0)
+                {
+                    string updateSql = @"
+                        UPDATE sbl_bonus_history_item 
+                        SET a_grade = @AGrade, b_grade = @BGrade 
+                        WHERE history_id = @HistoryId AND item_id = @ItemId";
+                    
+                    conn.Execute(updateSql, new { HistoryId = this.Id, ItemId = item.ItemId, AGrade = item.AGrade, BGrade = item.BGrade }, trans);
+                }
+                else
+                {
+                    string insertSql = @"
+                        INSERT INTO sbl_bonus_history_item (history_id, item_id, a_grade, b_grade) 
+                        VALUES (@HistoryId, @ItemId, @AGrade, @BGrade)";
+                    
+                    conn.Execute(insertSql, new { HistoryId = this.Id, ItemId = item.ItemId, AGrade = item.AGrade, BGrade = item.BGrade }, trans);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 模擬取得 Sequence 的方法 (請依據你們實際在 SQL Server 產生序號的方式調整)
+        /// </summary>
+        private string GetSequenceNumber(SqlConnection conn, SqlTransaction trans, string seqName)
+        {
+            // 這裡實作你們產生 ID 的邏輯。
+            // 假設你們有一個自訂的儲存程序或 Function 來取號：
+            // return conn.QueryFirst<string>("SELECT dbo.fn_GetNextSeq(@SeqName)", new { SeqName = seqName }, trans);
+            
+            return Guid.NewGuid().ToString("N"); // 暫用 Guid 模擬唯一碼
+        }
+    }
+}
