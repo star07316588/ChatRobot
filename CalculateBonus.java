@@ -376,3 +376,15 @@
                 slic.SaveToHistoryDB(conn);
             }
     }
+
+    public void SaveToHistoryDB(Connection conn)throws Exception{HashMap value = new HashMap();
+            value.put("history_id",this.history_id);
+            value.put("item_id",this.item_id);
+            SQLStem.delete(conn,this.table,value);
+            if(this.cer_item_id!=null){
+                for (int i = 0; i < this.cer_item_id.length; i++) {
+                    value.put("cer_item_id", this.cer_item_id[i]);
+                    SQLStem.insert(conn, this.table, value);
+                }
+            }
+    }
