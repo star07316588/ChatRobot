@@ -352,3 +352,27 @@
             }
         }
     }
+
+    public void SaveToHistoryDB(Connection conn)throws Exception{
+            HashMap value = new HashMap();
+            value.put("history_id",this.history_id);
+            value.put("item_id",this.id);
+            SQLStem.delete(conn,this.htable,value);
+            value.put("a_grade",this.a_grade);
+            value.put("b_grade",this.b_grade);
+            SQLStem.insert(conn,this.htable,value);
+            BonusLicence mlic = this.getMLicence();
+            BonusLicence slic = this.getSLicence();
+            if(mlic!=null){
+                mlic.setHistory_id(this.getHistory_id());
+                mlic.setItem_id(this.getId());
+                mlic.setTable("sbl_bonus_hmlicence");
+                mlic.SaveToHistoryDB(conn);
+            }
+            if(slic!=null){
+                slic.setHistory_id(this.getHistory_id());
+                slic.setItem_id(this.getId());
+                slic.setTable("sbl_bonus_hslicence");
+                slic.SaveToHistoryDB(conn);
+            }
+    }
