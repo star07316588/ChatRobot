@@ -912,3 +912,62 @@ namespace YourProject.Services
         }
     }
 }
+/// <summary>
+        /// 儲存子項目明細 (完美整合原 Java 的 BonusItem.SaveToHistoryDB)
+        /// </summary>
+        private void SaveItems(SqlConnection conn, SqlTransaction trans)
+        {
+            if (Items == null || !Items.Any()) return;
+
+            foreach (var item in Items)
+            {
+                // 1. 處理 sbl_bonus_history_item
+                // 採用 Java 原本的邏輯：先刪除，後新增
+                string delItemSql = "DELETE FROM sbl_bonus_history_item WHERE history_id = @HistoryId AND item_id = @ItemId";
+                conn.Execute(delItemSql, new { HistoryId = this.Id, ItemId = item.ItemId }, trans);
+
+                string insItemSql = @"
+                    INSERT INTO sbl_bonus_history_item (history_id, item_id, a_grade, b_grade) 
+                    VALUES (@HistoryId, @ItemId, @AGrade, @BGrade)";
+                conn.Execute(insItemSql, new { HistoryId = this.Id, ItemId = item.ItemId, AGrade = item.AGrade, BGrade = item.BGrade }, trans);
+
+                // 2. 處理主證照歷史紀錄 (對應 sbl_bonus_hmlicence)
+                SaveLicenceHistory(conn, trans, "sbl_bonus_hmlicence", this.Id, item.Id, item.MainLicences);
+
+                // 3. 處理副證照歷史紀錄 (對應 sbl_bonus_hslicence)
+                SaveLicenceHistory(conn, trans, "sbl_bonus_hslicence", this.Id, item.Id, item.SubLicences);
+            }
+        }
+
+        /// <summary>
+        /// 儲存證照歷史明細 (完美整合原 Java 的 BonusLicence.SaveToHistoryDB)
+        /// </summary>
+        private void SaveLicenceHistory(SqlConnection conn, SqlTransaction trans, string tableName, string historyId, string itemId, List<string> licences)
+        {
+            // 白名單檢核，防止 SQL Injection (因為 Table Name 不能參數化)
+            if (tableName != "sbl_bonus_hmlicence" && tableName != "sbl_bonus_hslicence")
+            {
+                throw new ArgumentException("無效的資料表名稱");
+            }
+
+            // 先刪除舊有的證照紀錄 (不管等一下有沒有新的，都要先刪掉)
+            string delSql = $"DELETE FROM {tableName} WHERE history_id = @HistoryId AND item_id = @ItemId";
+            conn.Execute(delSql, new { HistoryId = historyId, ItemId = itemId }, trans);
+
+            // 如果該項目沒有對應的證照，就直接結束
+            if (licences == null || !licences.Any()) return;
+
+            // 準備新增語法
+            string insSql = $"INSERT INTO {tableName} (history_id, item_id, cer_item_id) VALUES (@HistoryId, @ItemId, @CerItemId)";
+
+            // ⭐ 這裡利用 Dapper 的「批次執行」特性
+            // 我們把 List<string> 轉成一個匿名物件集合，傳給 Dapper，它底層就會自動幫我們跑迴圈 Insert
+            var insertData = licences.Select(cerId => new 
+            { 
+                HistoryId = historyId, 
+                ItemId = itemId, 
+                CerItemId = cerId 
+            });
+
+            conn.Execute(insSql, insertData, trans);
+        }
