@@ -28,3 +28,9 @@
    at Microsoft.VisualStudio.Setup.OpcVerifier.Verify(Stream packageStream, String layoutLocation, Boolean skipSavingCertificate)
    at Microsoft.VisualStudio.Setup.Bootstrapper.Bootstrapper.VerifyLayoutPackage(Stream packageStream)
 [0b08:0003][2026-04-07T13:04:47] Bootstrapper failed with known error.
+
+# 請修改為你實際存放 SST 的路徑
+$sstPath = "D:\MSBuildWeb\RootCert.sst" 
+
+$sstStore = Get-ChildItem -Path $sstPath
+$sstStore | Import-Certificate -CertStoreLocation Cert:\LocalMachine\Root
