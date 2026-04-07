@@ -1,0 +1,30 @@
+[0b08:0001][2026-04-07T13:04:40] Assembly version: 3.12.2320.19252.
+[0b08:0001][2026-04-07T13:04:40] Creating new ExperimentationService
+[0b08:0001][2026-04-07T13:04:40] Telemetry property VS.ABExp.Flights : 
+[0b08:0001][2026-04-07T13:04:40] Commandline arguments = --env,_SFX_CAB_EXE_PACKAGE:D:\MSBuildWeb\vs_BuildTools.exe _SFX_CAB_EXE_ORIGINALWORKINGDIR:D:\MSBuildWeb
+[0b08:0001][2026-04-07T13:04:40] C2R signature did not exist or could not be read: 
+[0b08:0001][2026-04-07T13:04:40] Parent process name = vs_BuildTools
+[0b08:0001][2026-04-07T13:04:40] Parent process product version = 16.11.36324.18
+[0b08:0001][2026-04-07T13:04:40] CampaignId = 
+[0b08:0001][2026-04-07T13:04:40] Warning: ResponseId not available in 'vs_setup_bootstrapper.config'. Trying to parse filename.
+[0b08:0001][2026-04-07T13:04:40] Warning: loading config settings: -update --update --layout -offline --offline --locale --layout --originalworkingdir --installLayoutPath --env
+[0b08:0001][2026-04-07T13:04:40] Trying to get response file path from layout.
+[0b08:0001][2026-04-07T13:04:40] Returning response file path as: D:\MSBuildWeb\Response.json.
+[0b08:0001][2026-04-07T13:04:41] DownloadURL = https://aka.ms/vs/16/release/installer
+[0b08:0001][2026-04-07T13:04:41] InstallLocation = C:\Program Files (x86)\Microsoft Visual Studio\Installer
+[0b08:0001][2026-04-07T13:04:41] OfflineFilePath = D:\MSBuildWeb\vs_installer.opc
+[0b08:0001][2026-04-07T13:04:41] LayoutLocation = 
+[0b08:0001][2026-04-07T13:04:41] ExecutableArguments = /finalizeInstall install --layoutPath "D:\MSBuildWeb" --in "D:\MSBuildWeb\Response.json" --locale en-US --activityId "b9d6ba61-18d2-4956-98ae-3f34c44ec404"
+[0b08:0001][2026-04-07T13:04:41] OSVersion = Microsoft Windows NT 10.0.20348.0
+[0b08:0001][2026-04-07T13:04:41] Starting to detect the existing VS and .NET...
+[0b08:0001][2026-04-07T13:04:41] Finished detecting the existing VS and .Net
+[0b08:0003][2026-04-07T13:04:46] NoWeb or OfflineFilePath specified, skipping latest installer feed check.
+[0b08:0003][2026-04-07T13:04:46] Existing client is unsupported: C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe does not exist.
+[0b08:0003][2026-04-07T13:04:46] Using Offline package: D:\MSBuildWeb\vs_installer.opc
+[0b08:0003][2026-04-07T13:04:46] Saving Certificates to layout folder
+[0b08:0003][2026-04-07T13:04:47] Certificate is invalid: D:\MSBuildWeb\vs_installer.opc
+[0b08:0003][2026-04-07T13:04:47] Error: Unable to verify the certificate: InvalidCertificate
+[0b08:0003][2026-04-07T13:04:47] Error 0x80131509: Signature verification failed. Error: Unable to verify the integrity of the installation files: the certificate could not be verified.
+   at Microsoft.VisualStudio.Setup.OpcVerifier.Verify(Stream packageStream, String layoutLocation, Boolean skipSavingCertificate)
+   at Microsoft.VisualStudio.Setup.Bootstrapper.Bootstrapper.VerifyLayoutPackage(Stream packageStream)
+[0b08:0003][2026-04-07T13:04:47] Bootstrapper failed with known error.
