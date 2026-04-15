@@ -212,3 +212,145 @@ c# mvc view 儲存時出現 發生錯誤: Internal Server Error
 
         public bool IsClose { get; set; }
     }
+
+"<!DOCTYPE html>
+<html>
+    <head>
+        <title>The JSON request was too large to be deserialized.</title>
+        <meta name="viewport" content="width=device-width" />
+        <style>
+         body {font-family:"Verdana";font-weight:normal;font-size: .7em;color:black;} 
+         p {font-family:"Verdana";font-weight:normal;color:black;margin-top: -5px}
+         b {font-family:"Verdana";font-weight:bold;color:black;margin-top: -5px}
+         H1 { font-family:"Verdana";font-weight:normal;font-size:18pt;color:red }
+         H2 { font-family:"Verdana";font-weight:normal;font-size:14pt;color:maroon }
+         pre {font-family:"Consolas","Lucida Console",Monospace;font-size:11pt;margin:0;padding:0.5em;line-height:14pt}
+         .marker {font-weight: bold; color: black;text-decoration: none;}
+         .version {color: gray;}
+         .error {margin-bottom: 10px;}
+         .expandable { text-decoration:underline; font-weight:bold; color:navy; cursor:hand; }
+         @media screen and (max-width: 639px) {
+          pre { width: 440px; overflow: auto; white-space: pre-wrap; word-wrap: break-word; }
+         }
+         @media screen and (max-width: 479px) {
+          pre { width: 280px; }
+         }
+        </style>
+    </head>
+
+    <body bgcolor="white">
+
+            <span><H1>'/' 應用程式中發生伺服器錯誤。<hr width=100% size=1 color=silver></H1>
+
+            <h2> <i>The JSON request was too large to be deserialized.</i> </h2></span>
+
+            <font face="Arial, Helvetica, Geneva, SunSans-Regular, sans-serif ">
+
+            <b> 描述: </b>在執行目前 Web 要求的過程中發生未處理的例外狀況。請檢閱堆疊追蹤以取得錯誤的詳細資訊，以及在程式碼中產生的位置。
+
+            <br><br>
+
+            <b> 例外狀況詳細資訊: </b>System.InvalidOperationException: The JSON request was too large to be deserialized.<br><br>
+
+            <b>原始程式錯誤:</b> <br><br>
+
+            <table width=100% bgcolor="#ffffcc">
+               <tr>
+                  <td>
+                      <code>
+
+在執行目前 Web 要求期間，產生未處理的例外狀況。如需有關例外狀況來源與位置的資訊，可以使用下列的例外狀況堆疊追蹤取得。</code>
+
+                  </td>
+               </tr>
+            </table>
+
+            <br>
+
+            <b>堆疊追蹤:</b> <br><br>
+
+            <table width=100% bgcolor="#ffffcc">
+               <tr>
+                  <td>
+                      <code><pre>
+
+[InvalidOperationException: The JSON request was too large to be deserialized.]
+   System.Web.Mvc.EntryLimitedDictionary.Add(String key, Object value) +95
+   System.Web.Mvc.JsonValueProviderFactory.AddToBackingStore(EntryLimitedDictionary backingStore, String prefix, Object value) +361
+   System.Web.Mvc.JsonValueProviderFactory.AddToBackingStore(EntryLimitedDictionary backingStore, String prefix, Object value) +146
+   System.Web.Mvc.JsonValueProviderFactory.AddToBackingStore(EntryLimitedDictionary backingStore, String prefix, Object value) +323
+   System.Web.Mvc.JsonValueProviderFactory.AddToBackingStore(EntryLimitedDictionary backingStore, String prefix, Object value) +146
+   System.Web.Mvc.JsonValueProviderFactory.GetValueProvider(ControllerContext controllerContext) +88
+   System.Web.Mvc.ValueProviderFactoryCollection.GetValueProvider(ControllerContext controllerContext) +69
+   System.Web.Mvc.ControllerBase.get_ValueProvider() +30
+   System.Web.Mvc.ControllerActionInvoker.GetParameterValue(ControllerContext controllerContext, ParameterDescriptor parameterDescriptor) +62
+   System.Web.Mvc.ControllerActionInvoker.GetParameterValues(ControllerContext controllerContext, ActionDescriptor actionDescriptor) +105
+   System.Web.Mvc.Async.&lt;&gt;c__DisplayClass21.&lt;BeginInvokeAction&gt;b__19(AsyncCallback asyncCallback, Object asyncState) +743
+   System.Web.Mvc.Async.WrappedAsyncResult`1.CallBeginDelegate(AsyncCallback callback, Object callbackState) +14
+   System.Web.Mvc.Async.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout) +128
+   System.Web.Mvc.Async.AsyncControllerActionInvoker.BeginInvokeAction(ControllerContext controllerContext, String actionName, AsyncCallback callback, Object state) +343
+   System.Web.Mvc.Controller.&lt;BeginExecuteCore&gt;b__1c(AsyncCallback asyncCallback, Object asyncState, ExecuteCoreState innerState) +25
+   System.Web.Mvc.Async.WrappedAsyncVoid`1.CallBeginDelegate(AsyncCallback callback, Object callbackState) +30
+   System.Web.Mvc.Async.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout) +128
+   System.Web.Mvc.Controller.BeginExecuteCore(AsyncCallback callback, Object state) +465
+   System.Web.Mvc.Controller.&lt;BeginExecute&gt;b__14(AsyncCallback asyncCallback, Object callbackState, Controller controller) +18
+   System.Web.Mvc.Async.WrappedAsyncVoid`1.CallBeginDelegate(AsyncCallback callback, Object callbackState) +20
+   System.Web.Mvc.Async.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout) +128
+   System.Web.Mvc.Controller.BeginExecute(RequestContext requestContext, AsyncCallback callback, Object state) +374
+   System.Web.Mvc.Controller.System.Web.Mvc.Async.IAsyncController.BeginExecute(RequestContext requestContext, AsyncCallback callback, Object state) +16
+   System.Web.Mvc.MvcHandler.&lt;BeginProcessRequest&gt;b__4(AsyncCallback asyncCallback, Object asyncState, ProcessRequestState innerState) +52
+   System.Web.Mvc.Async.WrappedAsyncVoid`1.CallBeginDelegate(AsyncCallback callback, Object callbackState) +30
+   System.Web.Mvc.Async.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout) +128
+   System.Web.Mvc.MvcHandler.BeginProcessRequest(HttpContextBase httpContext, AsyncCallback callback, Object state) +384
+   System.Web.Mvc.MvcHandler.BeginProcessRequest(HttpContext httpContext, AsyncCallback callback, Object state) +48
+   System.Web.Mvc.MvcHandler.System.Web.IHttpAsyncHandler.BeginProcessRequest(HttpContext context, AsyncCallback cb, Object extraData) +16
+   System.Web.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute() +103
+   System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step) +48
+   System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean&amp; completedSynchronously) +159
+</pre></code>
+
+                  </td>
+               </tr>
+            </table>
+
+            <br>
+
+            <hr width=100% size=1 color=silver>
+
+            <b>版本資訊:</b>&nbsp;Microsoft .NET Framework 版本:4.0.30319; ASP.NET 版本:4.7.4108.0
+
+            </font>
+
+    </body>
+</html>
+<!-- 
+[InvalidOperationException]: The JSON request was too large to be deserialized.
+   於 System.Web.Mvc.JsonValueProviderFactory.EntryLimitedDictionary.Add(String key, Object value)
+   於 System.Web.Mvc.JsonValueProviderFactory.AddToBackingStore(EntryLimitedDictionary backingStore, String prefix, Object value)
+   於 System.Web.Mvc.JsonValueProviderFactory.AddToBackingStore(EntryLimitedDictionary backingStore, String prefix, Object value)
+   於 System.Web.Mvc.JsonValueProviderFactory.AddToBackingStore(EntryLimitedDictionary backingStore, String prefix, Object value)
+   於 System.Web.Mvc.JsonValueProviderFactory.AddToBackingStore(EntryLimitedDictionary backingStore, String prefix, Object value)
+   於 System.Web.Mvc.JsonValueProviderFactory.GetValueProvider(ControllerContext controllerContext)
+   於 System.Web.Mvc.ValueProviderFactoryCollection.GetValueProvider(ControllerContext controllerContext)
+   於 System.Web.Mvc.ControllerBase.get_ValueProvider()
+   於 System.Web.Mvc.ControllerActionInvoker.GetParameterValue(ControllerContext controllerContext, ParameterDescriptor parameterDescriptor)
+   於 System.Web.Mvc.ControllerActionInvoker.GetParameterValues(ControllerContext controllerContext, ActionDescriptor actionDescriptor)
+   於 System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass21.<BeginInvokeAction>b__19(AsyncCallback asyncCallback, Object asyncState)
+   於 System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResult`1.CallBeginDelegate(AsyncCallback callback, Object callbackState)
+   於 System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout)
+   於 System.Web.Mvc.Async.AsyncControllerActionInvoker.BeginInvokeAction(ControllerContext controllerContext, String actionName, AsyncCallback callback, Object state)
+   於 System.Web.Mvc.Controller.<BeginExecuteCore>b__1c(AsyncCallback asyncCallback, Object asyncState, ExecuteCoreState innerState)
+   於 System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncVoid`1.CallBeginDelegate(AsyncCallback callback, Object callbackState)
+   於 System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout)
+   於 System.Web.Mvc.Controller.BeginExecuteCore(AsyncCallback callback, Object state)
+   於 System.Web.Mvc.Controller.<BeginExecute>b__14(AsyncCallback asyncCallback, Object callbackState, Controller controller)
+   於 System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncVoid`1.CallBeginDelegate(AsyncCallback callback, Object callbackState)
+   於 System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout)
+   於 System.Web.Mvc.Controller.BeginExecute(RequestContext requestContext, AsyncCallback callback, Object state)
+   於 System.Web.Mvc.Controller.System.Web.Mvc.Async.IAsyncController.BeginExecute(RequestContext requestContext, AsyncCallback callback, Object state)
+   於 System.Web.Mvc.MvcHandler.<BeginProcessRequest>b__4(AsyncCallback asyncCallback, Object asyncState, ProcessRequestState innerState)
+   於 System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncVoid`1.CallBeginDelegate(AsyncCallback callback, Object callbackState)
+   於 System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout)
+   於 System.Web.Mvc.MvcHandler.BeginProcessRequest(HttpContextBase httpContext, AsyncCallback callback, Object state)
+   於 System.Web.Mvc.MvcHandler.BeginProcessRequest(HttpContext httpContext, AsyncCallback callback, Object state)
+   於 System.Web.Mvc.MvcHandler.System.Web.IHttpAsyncHandler.BeginProcessRequest(Htt…"
