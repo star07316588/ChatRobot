@@ -354,3 +354,11 @@ c# mvc view 儲存時出現 發生錯誤: Internal Server Error
    於 System.Web.Mvc.MvcHandler.BeginProcessRequest(HttpContextBase httpContext, AsyncCallback callback, Object state)
    於 System.Web.Mvc.MvcHandler.BeginProcessRequest(HttpContext httpContext, AsyncCallback callback, Object state)
    於 System.Web.Mvc.MvcHandler.System.Web.IHttpAsyncHandler.BeginProcessRequest(Htt…"
+
+<system.web.extensions>
+  <scripting>
+    <webServices>
+      <jsonSerialization maxJsonLength="2147483647" />
+    </webServices>
+  </scripting>
+</system.web.extensions>
