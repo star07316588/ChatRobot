@@ -1,0 +1,551 @@
+@model MesTAManagementSystem_New.ViewModels.DLOperation.Checking.SubjectiveVM
+@{
+    ViewBag.Title = "Subjective(主觀評比排名作業)";
+    Layout = "~/Views/Shared/_LayoutMainWithBasic.cshtml";
+}
+@section styles
+{
+}
+
+
+@section scripts
+{
+    @Scripts.Render("~/bundles/jquery-ui")
+    @Scripts.Render("~/bundles/jqgrid")
+    @Scripts.Render("~/bundles/jquery-blockui")
+<script type="text/javascript">
+        //===================================================================================
+        //  宣告區塊
+        //===================================================================================
+        var $resultTable = $('#result-table');
+        var $resultTablePager = $('#result-table-pager');
+        var $searchForm = $('#search-form');
+        var $submitButton = $('#submit-button');
+        var $searchDateTime = $('#BeginDate,#EndDate');
+
+        // 按鈕
+        var $btnSave = $('#btn-save');
+        var $btnClose = $('#btn-close');
+        var $btnCalc = $('#btn-calc');
+
+        $(document).ready(function () {
+            //===================================================================================
+            //  表格設定 (jqGrid)
+            //===================================================================================
+            $resultTable.jqGrid({
+                datatype: 'local',
+                autowidth: true,
+                shrinkToFit: false,
+                height: $('div.main').height() - 180, // 扣除上方資訊區塊高度
+                rownumbers: true,
+                viewrecords: true,
+                rowNum: 2000, // 考評通常一次全部顯示，不分頁
+                rowList: [500, 1000, 2000],
+                pager: $resultTablePager,
+                cellEdit: true,           // 啟用儲存格編輯
+                cellsubmit: 'clientArray',// 編輯後只存在前端記憶體，不直接 Post
+                colNames: [
+                           '@Html.DisplayNameFor(r => r.Dept_Id)',
+                           '@Html.DisplayNameFor(r => r.Station_Id)',
+                           '@Html.DisplayNameFor(r => r.Shift_Id)',
+                           '@Html.DisplayNameFor(r => r.Emp_Id)',
+                           '@Html.DisplayNameFor(r => r.Name)',
+                           '@Html.DisplayNameFor(r => r.Position_Group)',
+                           '@Html.DisplayNameFor(r => r.Title)',
+                           '@Html.DisplayNameFor(r => r.Record)',
+                           '@Html.DisplayNameFor(r => r.Score)',
+                           '@Html.DisplayNameFor(r => r.Comments)',
+                ],
+                colModel: [
+                    { name: 'Dept_Id', index: 'Dept_Id', width: '60', sortable: true },
+                    { name: 'Station_Id', index: 'Station_Id', width: '60', sortable: true },
+                    { name: 'Shift_Id', index: 'Shift_Id', width: '50', sortable: true },
+                    { name: 'Emp_Id', index: 'Emp_Id', width: '70', key: true, sortable: true },
+                    { name: 'Name', index: 'Name', width: '70', sortable: true },
+                    { name: 'Position_Group', index: 'Position_Group', width: '70', sortable: false },
+                    { name: 'Title', index: 'Title', width: '100', sortable: true },
+
+                    // === 重點修改區 ===
+                    {
+                        name: 'Record', index: 'Record', width: '80', align: 'center',
+                        editable: true,
+                        editrules: { number: true, minValue: 1 },
+                        formatter: 'integer',
+                        classes: 'bg-warning' // 加個底色提示可編輯
+                    },
+                    {
+                        name: 'Score', index: 'Score', width: '80', align: 'right',
+                        editable: false, // 分數由公式計算，不可手動改
+                        formatter: 'number', formatoptions: { decimalPlaces: 2 }
+                    },
+                    {
+                        name: 'Comments', index: 'Comments', width: '200',
+                        editable: true,
+                        edittype: 'textarea',
+                        editoptions: { rows: "1" },
+                        classes: 'bg-warning'
+                    }
+                ],
+                afterSaveCell: function (rowid, cellname, value, iRow, iCol) {
+                    if (cellname === 'Record') {
+                        // jqGrid提供API取得該列完整資料
+                        var rowData = $resultTable.jqGrid('getRowData', rowid);
+
+                        // 模擬原calculateRowScore需要的row參數，我們改寫calculateRowScore接受完整rowData 或至少用 rowid
+                        calculateRowScoreWithJqGrid(rowid, rowData);
+                    }
+                }
+            });
+
+            // Frozen Columns 設定
+            $resultTable.jqGrid('setFrozenColumns');
+
+            //===================================================================================
+            //  查詢按鈕點擊事件
+            //===================================================================================
+            $submitButton.click(function () {
+                var vm = {
+                    Year: $("#Year").val(),
+                    Month: $("#Month").val(),
+                    Dept_Id: $("#Dept_Id").val(),
+                    Title: $("#Title").val(),
+                    Shift_Id: $("#Shift_Id").val(),
+                    SelectedStationIds: $('#StationListBox').val(),
+                    Item: $("#Item").val(),
+                    DetailItem: $("#DetailItem").val(),
+                    LoginTitle: $("#LoginTitle").val()
+                };
+
+                $.ajax({
+                    url: '@Url.Action("QueryTable")', // 請確認 Controller 有此 Action
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(vm),
+                    beforeSend: function () {
+                        $.blockUI({ message: '查詢中...' });
+                    },
+                    success: function (response) {
+                        // 假設後端回傳格式為 { Data: [...], Config: { Upper: 100, Lower: 60, Weight: 20... } }
+                        // 如果只回傳 List，則 Config 需要另外處理
+
+                        // 1. 更新上方資訊區 (假設 response 包含 Config)
+                        if (response.Config) {
+                            $('#lblWeighting').text(response.Config.Weighting);
+                            $('#lblRange').text(response.Config.LowerBound + ' ~ ' + response.Config.UpperBound);
+                            $('#lblRemark').text(response.Config.ItemRemark);
+
+                            // 備註內容 (支援 HTML 格式，如 &quot;)
+                            $('#lblHeadTitle').text(response.Config.HeadTitle);
+                            $('#lblItemName').text(response.Config.ItemName);
+                            $('#lblDetailItemName').text(response.Config.DetailItemName);
+                            $('#lblItemRemark').html(response.Config.ItemRemark || "無說明");
+                            $('#lblDetailItemRemark').html(response.Config.DetailItemRemark || "無說明");
+
+                            // 寫入隱藏欄位供計算用
+                            $('#hidUpperBound').val(response.Config.UpperBound);
+                            $('#hidLowerBound').val(response.Config.LowerBound);
+                            $('#hidWeighting').val(response.Config.Weighting);
+                        }
+
+                        // 2. 載入 Grid 資料
+                        // 注意：這裡假設 response.Data 是資料 List
+                        var gridData = response.Data || response;
+
+                        $('#hidTotalCount').val(gridData.length); // 紀錄總筆數供公式分母使用
+
+                        $resultTable.jqGrid('clearGridData').jqGrid('setGridParam', {
+                            data: gridData
+                        }).trigger('reloadGrid');
+                    },
+                    complete: function () {
+                        $.unblockUI();
+                    }
+                });
+            });
+
+            //===================================================================================
+            //  存檔與送件按鈕
+            //===================================================================================
+            // [OK 存檔] 按鈕
+            $('#btn-save').click(function () {
+                // 執行存檔，參數 isClose = false
+                saveData(false);
+            });
+
+            // [Close 送件] 按鈕
+            $('#btn-close').click(function () {
+                // 跳出確認視窗，如同 JSP 的 confirm
+                if (confirm('確定要送件結案嗎？送出後將無法修改。')) {
+                    // 執行存檔並結案，參數 isClose = true
+                    saveData(true);
+                }
+            });
+
+            // [Cancel 取消] 按鈕
+            $('#btn-cancel').click(function () {
+                // 取消邏輯：重新載入 Grid 資料 (放棄未存檔的修改)
+                // 這相當於重新按下查詢按鈕，還原到資料庫目前的狀態
+                if (confirm('確定要取消變更並重新載入資料嗎？')) {
+                    $submitButton.click();
+                }
+            });
+
+            //===================================================================================
+            //  下拉選單連動 (範例)
+            //===================================================================================
+            $('#Dept_Id').change(function() {
+                // 這裡呼叫 AJAX 取得新的 Station / Shift List 並更新 Dropdown
+                // updateDropdown('GetStation', $(this).val(), '#Station_Id');
+            });
+        });
+
+        //===================================================================================
+        //  下拉選單連動：當 Item 改變時，更新 DetailItem
+        //===================================================================================
+        $('#Item').change(function () {
+
+            var vm = {
+                SelectedStationIds: $('#StationListBox').val(),
+                Title: $("#Title").val(),
+                Item: $("#Item").val()
+            };
+
+            // 1. 先清空 DetailItem 選單
+            var $detailDropdown = $('#DetailItem');
+            $detailDropdown.empty();
+
+            // 2. 發送 AJAX 請求取得細項
+            $.ajax({
+                url: '@Url.Action("GetDetailItemList", "Subjective")', // 請確認 Controller 名稱
+                type: 'POST',
+                // 傳送 JSON 格式參數
+                contentType: 'application/json',
+                data: JSON.stringify(vm),
+                success: function (data) {
+                    // data 預期是一個字串陣列 List<string>
+                    if (data && data.length > 0) {
+                        $.each(data, function (index, value) {
+                            // 建立 <option value='xxx'>xxx</option>
+                            $detailDropdown.append($('<option></option>').val(value).text(value));
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("無法取得細項資料: " + error);
+                }
+            });
+        });
+
+
+        // 1. 新增切換顯示的函式 (對應 JSP 的 display_remark)
+        function display_remark(divId) {
+            var x = document.getElementById(divId);
+            if (x.style.display === "none") {
+                $(x).fadeIn(); // 加點特效
+            } else {
+                x.style.display = "none";
+            }
+        }
+
+        //===================================================================================
+        //  核心邏輯：計算分數
+        //===================================================================================
+        function calculateRowScore(Emp_Id, rankVal) {
+            var rank = parseInt(rankVal);
+            var max = parseFloat($('#hidUpperBound').val());
+            var min = parseFloat($('#hidLowerBound').val());
+            var total = parseInt($('#hidTotalCount').val());
+
+            if (isNaN(rank) || isNaN(max) || isNaN(min) || isNaN(total)) return;
+
+            // 驗證排名
+            if (rank > total) {
+                alert('排名不可大於總人數 (' + total + ')');
+                $resultTable.jqGrid('setCell', rowId, 'Record', null); // 清空
+                $resultTable.jqGrid('setCell', rowId, 'Score', null);
+                return;
+            }
+
+            // 公式: Score = Max - ((Rank - 1) * ((Max - Min) / (Total - 1)))
+            var score = 0;
+            if (total > 1) {
+                var step = (max - min) / (total - 1);
+                score = max - ((rank - 1) * step);
+            } else {
+                score = max; // 只有一人時得最高分
+            }
+
+            // 四捨五入到小數點兩位
+            score = Math.round(score * 100) / 100;
+
+            // 更新 Grid
+            $resultTable.jqGrid('setCell', Emp_Id, 'Score', score);
+        }
+
+        //===================================================================================
+        //  核心邏輯：資料存檔
+        //===================================================================================
+        function saveData(isClose) {
+            var $grid = $resultTable;
+
+            // 1. [重要] 強制讓目前正在編輯的 Cell 寫入 jqGrid 的本地資料 (Client Array)
+            // 這樣才能確保使用者輸入的最新內容被包含在 getRowData 裡
+            var editRowId = $grid.jqGrid('getGridParam', 'selrow');
+            var editCell = $grid.jqGrid('getGridParam', 'iCol'); // 取得目前編輯的欄位 Index
+
+            if (editRowId && editCell !== undefined) {
+                // 強制保存目前焦點所在的儲存格
+                $grid.jqGrid('saveCell', editRowId, editCell);
+            }
+
+            // 2. 取得 Grid 所有資料 (這時候只有 Emp_Id, Score, Record, Comments...)
+            var gridRows = $grid.jqGrid('getRowData');
+
+            // 3. 取得外部查詢條件 (Context)
+            var currentYear = $("#Year").val();
+            var currentMonth = $("#Month").val();
+            var currentDept = $("#Dept_Id").val(); // 若 Controller 需要
+            var currentTitle = $("#Title").val();
+            var currentItem = $("#Item").val();
+            var currentDetailItem = $("#DetailItem").val();
+            var currentLoginTitle = $("#LoginTitle").val();
+            var currentSelectedStationIds = $('#StationListBox').val();
+
+            // 4. [關鍵] 將查詢條件注入到每一筆資料列中
+            // 因為您的 Controller 是用 data.Year, data.Month，所以每一列都要有這些欄位
+            var dataToSend = [];
+            $.each(gridRows, function(index, row) {
+                // 複製一份 row 資料
+                var newRow = $.extend({}, row);
+
+                // 手動補上缺少的欄位
+                newRow.Year = currentYear;
+                newRow.Month = currentMonth;
+                newRow.Title = currentTitle;
+                newRow.Item = currentItem;
+                newRow.DetailItem = currentDetailItem;
+                newRow.Dept_Id = currentDept;
+                newRow.SelectedStationIds = currentSelectedStationIds;
+                newRow.LoginTitle = currentLoginTitle;
+
+                dataToSend.push(newRow);
+            });
+
+            // 5. 準備 Post 物件 (對應 SubjectiveResultVM)
+            // 結構: { Data: [...], IsClose: true/false }
+            var postData = {
+                Data: dataToSend,
+                IsClose: isClose // 建議您的 VM 補上此屬性，以便後端判斷是否為結案
+            };
+
+            $.ajax({
+                url: '@Url.Action("SaveData")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(postData), // 對應參數名稱 searchInfo
+                beforeSend: function () {
+                    $.blockUI({ message: '資料處理中...' });
+                },
+                success: function (result) {
+                    if (result.success) {
+                        alert(isClose ? '送件結案成功！' : '存檔成功！');
+                        // 重新查詢刷新頁面
+                        $submitButton.click();
+                    } else {
+                        alert('作業失敗'); // 若後端沒回傳 message，顯示通用訊息
+                    }
+                },
+                error: function(xhr, status, error) {
+                     alert('發生錯誤: ' + error);
+                },
+                complete: function () {
+                    $.unblockUI();
+                }
+            });
+        }
+</script>
+}
+@section left_sidebar
+{
+    @Html.HiddenFor(m => m.LoginTitle)
+    <form id="search-form" action="#">
+        <table width="100%">
+            <thead>
+                <tr>
+                    <th colspan="2">
+                        <i class="glyphicon glyphicon-search"></i>Find results with...
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td align="right">
+                        @Html.DisplayNameFor(m => m.Year)：
+                    </td>
+                    <td>
+                        <div class="form-group margin0">
+                            @Html.DropDownListFor(model => model.Year, Model.YearList, new { @class = "form-control input-xs" })
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">
+                        @Html.DisplayNameFor(m => m.Month)：
+                    </td>
+                    <td>
+                        <div class="form-group margin0">
+                            @Html.DropDownListFor(model => model.Month, Model.MonthList, new { @class = "form-control input-xs" })
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">
+                        @Html.DisplayNameFor(m => m.Dept_Id)：
+                    </td>
+                    <td>
+                        <div class="form-group margin0">
+                            @Html.TextBoxFor(model => model.Dept_Id, new { @class = "form-control input-xs", @readonly = "readonly" })
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">
+                        @Html.DisplayNameFor(m => m.Title)：
+                    </td>
+                    <td>
+                        <div class="form-group margin0">
+                            @Html.DropDownListFor(model => model.Title, Model.TitleList, new { @class = "form-control input-xs" })
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">
+                        @Html.DisplayNameFor(m => m.Shift_Id)：
+                    </td>
+                    <td>
+                        <div class="form-group margin0">
+                            @Html.DropDownListFor(model => model.Shift_Id, Model.ShiftIdList, new { @class = "form-control input-xs" })
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">
+                        @Html.DisplayNameFor(m => m.Station_Id)：
+                    </td>
+                    <td>
+                        <div class="form-group margin0">
+                            @Html.ListBoxFor(model => model.SelectedStationIds, Model.StationIdList, new { @id = "StationListBox", @class = "form-control input-xs", @style = "height: 50px" })
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">
+                        @Html.DisplayNameFor(m => m.Item)：
+                    </td>
+                    <td>
+                        <div class="form-group margin0">
+                            @Html.DropDownListFor(model => model.Item, Model.ItemList, new { @class = "form-control input-xs" })
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">
+                        @Html.DisplayNameFor(m => m.DetailItem)：
+                    </td>
+                    <td>
+                        <div class="form-group margin0">
+                            @Html.DropDownListFor(model => model.DetailItem, Model.DetailItemList, new { @class = "form-control input-xs" })
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                    </td>
+                    <td>
+                        <button id="submit-button" type="button" class="btn btn-xs btn-primary">
+                            Search
+                        </button>
+                        <button id="reset-button" type="reset" class="btn btn-xs btn-default">
+                            Reset
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+}
+<input type="hidden" id="hidWeighting" />
+<input type="hidden" id="hidUpperBound" />
+<input type="hidden" id="hidLowerBound" />
+<input type="hidden" id="hidTotalCount" />
+
+<div class="alert alert-info" style="margin-bottom: 5px; padding: 10px;">
+    <div class="row">
+        <div class="col-md-3">
+            <strong>權重：</strong><span id="lblWeighting">--</span>%
+        </div>
+        <div class="col-md-3">
+            <strong>分數範圍：</strong><span id="lblRange">-- ~ --</span>
+        </div>
+        <div class="col-md-6">
+            <strong>備註：</strong><span id="lblRemark">--</span>
+        </div>
+    </div>
+</div>
+
+<table class="table table-bordered" style="width: 100%; margin-bottom: 10px; background-color: #fff;">
+    <tbody>
+        <tr>
+            <td rowspan="2" style="width: 25%; vertical-align: middle; text-align: center; background-color: #f5f5f5; font-size: 1.5em; font-weight: bold;">
+                <span id="lblHeadTitle">--</span> 考核
+                <input type="hidden" id="headtitle" name="headtitle">
+            </td>
+
+            <td style="width: 8%; background-color: #f5f5f5; font-weight: bold;">項目</td>
+            <td style="width: 18%;">
+                <span id="lblItemName">--</span>
+            </td>
+            <td colspan="3">
+                <input type="button" class="btn btn-xs btn-info" value="說明" onclick="display_remark('item_remark_div')">
+                <div id="item_remark_div" style="display:none; margin-top: 5px; padding: 5px; border: 1px solid #ddd; background-color: #ffffe0;">
+                    <span id="lblItemRemark"></span>
+
+                    <input type="hidden" id="hidWeighting" value="0">
+                    <input type="hidden" id="hidUpperBound" value="0">
+                    <input type="hidden" id="hidLowerBound" value="0">
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td style="width: 8%; background-color: #f5f5f5; font-weight: bold;">細項</td>
+            <td>
+                <span id="lblDetailItemName">--</span>
+            </td>
+            <td colspan="3">
+                <input type="button" class="btn btn-xs btn-info" value="說明" onclick="display_remark('detailitem_remark_div')">
+                <div id="detailitem_remark_div" style="display:none; margin-top: 5px; padding: 5px; border: 1px solid #ddd; background-color: #ffffe0;">
+                    <span id="lblDetailItemRemark"></span>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<table id="result-table">
+</table>
+<div id="result-table-pager">
+</div>
+
+<div style="margin-bottom: 5px; text-align: right;">
+    <button id="btn-save" type="button" class="btn btn-info btn-sm">
+        OK 存檔
+    </button>
+
+    <button id="btn-cancel" type="button" class="btn btn-default btn-sm">
+        Cancel 取消
+    </button>
+
+    <button id="btn-close" type="button" class="btn btn-danger btn-sm">
+        Close 送件
+    </button>
+</div>
