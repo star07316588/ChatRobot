@@ -1,0 +1,332 @@
+@model MesTAManagementSystem_New.ViewModels.DLOperation.Checking.SubjectivePhVM
+@{
+    ViewBag.Title = "Subjective_ph(PCD/HW 主觀評比排名作業)";
+    Layout = "~/Views/Shared/_LayoutMainWithBasic.cshtml";
+}
+
+@section styles
+{
+    }
+
+@section scripts
+{
+    @Scripts.Render("~/bundles/jquery-ui")
+    @Scripts.Render("~/bundles/jqgrid")
+    @Scripts.Render("~/bundles/jquery-blockui")
+
+    <script type="text/javascript">
+        //===================================================================================
+        //  宣告區塊
+        //===================================================================================
+        var $resultTable = $('#result-table');
+        var $resultTablePager = $('#result-table-pager');
+        var $searchForm = $('#search-form');
+        var $submitButton = $('#submit-button');
+        
+        // 按鈕
+        var $btnSave = $('#btn-save');
+        var $btnClose = $('#btn-close');
+        var $btnCancel = $('#btn-cancel');
+
+        $(document).ready(function () {
+            //===================================================================================
+            //  表格設定 (jqGrid)
+            //===================================================================================
+            $resultTable.jqGrid({
+                datatype: 'local',
+                autowidth: true,
+                shrinkToFit: false,
+                height: $('div.main').height() - 180, // 扣除上方資訊區塊高度
+                rownumbers: true,
+                viewrecords: true,
+                rowNum: 2000, 
+                rowList: [500, 1000, 2000],
+                pager: $resultTablePager,
+                cellEdit: true,           // 啟用儲存格編輯
+                cellsubmit: 'clientArray',// 編輯後只存在前端記憶體
+                colNames: [
+                           '@Html.DisplayNameFor(r => r.Dept_Id)',
+                           '@Html.DisplayNameFor(r => r.Station_Id)',
+                           '@Html.DisplayNameFor(r => r.Shift_Id)',
+                           '@Html.DisplayNameFor(r => r.Emp_Id)',
+                           '@Html.DisplayNameFor(r => r.Item)',
+                           '@Html.DisplayNameFor(r => r.DetailItem)',
+                           '@Html.DisplayNameFor(r => r.Record)',
+                           '@Html.DisplayNameFor(r => r.Comments)',
+                ],
+                colModel: [
+                    { name: 'Dept_Id', index: 'Dept_Id', width: '60', sortable: true },
+                    { name: 'Station_Id', index: 'Station_Id', width: '60', sortable: true },
+                    { name: 'Shift_Id', index: 'Shift_Id', width: '60', sortable: true },
+                    { name: 'Emp_Id', index: 'Emp_Id', width: '80', key: true, sortable: true },
+                    { name: 'Item', index: 'Item', width: '120', sortable: true },
+                    { name: 'DetailItem', index: 'DetailItem', width: '150', sortable: true },
+                    // 主觀評比填寫欄位 (對應 JSP 的 input items)
+                    {
+                        name: 'Record', index: 'Record', width: '80', align: 'center',
+                        editable: true,
+                        editrules: { number: true, minValue: 0 },
+                        formatter: 'integer',
+                        classes: 'bg-warning' // 編輯提示底色
+                    },
+                    // 備註欄位
+                    {
+                        name: 'Comments', index: 'Comments', width: '250',
+                        editable: true,
+                        edittype: 'textarea',
+                        editoptions: { rows: "1" },
+                        classes: 'bg-warning'
+                    }
+                ]
+            });
+
+            // Frozen Columns 設定
+            $resultTable.jqGrid('setFrozenColumns');
+
+            //===================================================================================
+            //  查詢按鈕點擊事件 (Query)
+            //===================================================================================
+            $submitButton.click(function () {
+                // 表單基礎驗證
+                if (!$("#Year").val() || !$("#Month").val()) {
+                    alert("請選擇年度與月份！");
+                    return false;
+                }
+                
+                var shiftIds = $('#ShiftListBox').val();
+                if (!shiftIds || shiftIds.length === 0) {
+                    alert("請選擇班別！");
+                    return false;
+                }
+
+                var vm = {
+                    Year: $("#Year").val(),
+                    Month: $("#Month").val(),
+                    Dept_Id: $("#Dept_Id").val(),
+                    Station_Id: $("#Station_Id").val(),
+                    Title: $("#Title").val(),
+                    SelectedShiftIds: shiftIds,  // 傳遞多選班別的 Array
+                    LoginTitle: $("#LoginTitle").val()
+                };
+
+                $.ajax({
+                    url: '@Url.Action("QueryTable")', // 需對應 Controller 的 Action
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(vm),
+                    beforeSend: function () {
+                        $.blockUI({ message: '查詢中...' });
+                    },
+                    success: function (response) {
+                        var gridData = response.Data || response;
+                        
+                        $resultTable.jqGrid('clearGridData').jqGrid('setGridParam', {
+                            data: gridData
+                        }).trigger('reloadGrid');
+                    },
+                    error: function (xhr, status, error) {
+                        alert('查詢發生錯誤: ' + error);
+                    },
+                    complete: function () {
+                        $.unblockUI();
+                    }
+                });
+            });
+
+            //===================================================================================
+            //  存檔與結案按鈕 (Save / Close)
+            //===================================================================================
+            // [Save 存檔]
+            $btnSave.click(function () {
+                saveData(false);
+            });
+
+            // [Close 結案]
+            $btnClose.click(function () {
+                if (confirm('確定要送件結案嗎？送出後將無法修改。')) {
+                    saveData(true);
+                }
+            });
+
+            // [Cancel 取消]
+            $btnCancel.click(function () {
+                if (confirm('確定放棄這次修改並重新載入資料嗎？')) {
+                    $submitButton.click();
+                }
+            });
+        });
+
+        //===================================================================================
+        //  核心邏輯：資料存檔
+        //===================================================================================
+        function saveData(isClose) {
+            var $grid = $resultTable;
+
+            // 1. 強制保存目前焦點所在的儲存格
+            var editRowId = $grid.jqGrid('getGridParam', 'selrow');
+            var editCell = $grid.jqGrid('getGridParam', 'iCol'); 
+
+            if (editRowId && editCell !== undefined) {
+                $grid.jqGrid('saveCell', editRowId, editCell);
+            }
+
+            // 2. 取得 Grid 所有編輯資料
+            var gridRows = $grid.jqGrid('getRowData');
+            
+            if (gridRows.length === 0) {
+                alert("無資料可存檔");
+                return;
+            }
+
+            // 3. 取得外部查詢條件 (Context) 作為存檔依據
+            var currentYear = $("#Year").val();
+            var currentMonth = $("#Month").val();
+            var currentDept = $("#Dept_Id").val(); 
+            var currentStation = $("#Station_Id").val(); 
+            var currentTitle = $("#Title").val();
+            var currentSelectedShiftIds = $('#ShiftListBox').val();
+
+            // 4. 將查詢條件注入資料列中
+            var dataToSend = [];
+            $.each(gridRows, function(index, row) {
+                var newRow = $.extend({}, row);
+                newRow.Year = currentYear;
+                newRow.Month = currentMonth;
+                newRow.Title = currentTitle;
+                newRow.Dept_Id = currentDept;
+                newRow.Station_Id = currentStation;
+                newRow.SelectedShiftIds = currentSelectedShiftIds; 
+                
+                dataToSend.push(newRow);
+            });
+
+            // 5. 準備 Post 物件
+            var postData = {
+                Data: dataToSend,
+                IsClose: isClose // 判斷是 Save 還是 Close (結案)
+            };
+
+            $.ajax({
+                url: '@Url.Action("SaveData")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(postData), 
+                beforeSend: function () {
+                    $.blockUI({ message: '資料處理中...' });
+                },
+                success: function (result) {
+                    if (result.success) {
+                        alert(isClose ? '送件結案成功！' : '存檔完成！');
+                        $submitButton.click(); // 重新查詢刷新
+                    } else {
+                        alert(result.message || '作業失敗，請確認資料');
+                    }
+                },
+                error: function(xhr, status, error) {
+                     alert('發生錯誤: ' + error);
+                },
+                complete: function () {
+                    $.unblockUI();
+                }
+            });
+        }
+    </script>
+}
+
+@section left_sidebar
+{
+    @Html.HiddenFor(m => m.LoginTitle)
+    <form id="search-form" action="#">
+        <table width="100%">
+            <thead>
+                <tr>
+                    <th colspan="2">
+                        <i class="glyphicon glyphicon-search"></i> Find results with...
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td align="right">
+                        @Html.DisplayNameFor(m => m.Year)：
+                    </td>
+                    <td>
+                        <div class="form-group margin0">
+                            @Html.DropDownListFor(model => model.Year, Model.YearList, new { @class = "form-control input-xs" })
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">
+                        @Html.DisplayNameFor(m => m.Month)：
+                    </td>
+                    <td>
+                        <div class="form-group margin0">
+                            @Html.DropDownListFor(model => model.Month, Model.MonthList, new { @class = "form-control input-xs" })
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">
+                        @Html.DisplayNameFor(m => m.Dept_Id)：
+                    </td>
+                    <td>
+                        <div class="form-group margin0">
+                            @Html.TextBoxFor(model => model.Dept_Id, new { @class = "form-control input-xs", @readonly = "readonly" })
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">
+                        @Html.DisplayNameFor(m => m.Station_Id)：
+                    </td>
+                    <td>
+                        <div class="form-group margin0">
+                            @Html.TextBoxFor(model => model.Station_Id, new { @class = "form-control input-xs", @readonly = "readonly" })
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">
+                        @Html.DisplayNameFor(m => m.Title)：
+                    </td>
+                    <td>
+                        <div class="form-group margin0">
+                            @Html.DropDownListFor(model => model.Title, Model.TitleList, new { @class = "form-control input-xs" })
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">
+                        @Html.DisplayNameFor(m => m.Shift_Id)：
+                    </td>
+                    <td>
+                        <div class="form-group margin0">
+                            @Html.ListBoxFor(model => model.SelectedShiftIds, Model.ShiftIdList, new { @id = "ShiftListBox", @class = "form-control input-xs", @style = "height: 80px" })
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                    </td>
+                    <td style="padding-top: 10px;">
+                        <button id="submit-button" type="button" class="btn btn-xs btn-primary">
+                            Search
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+}
+
+<div class="main">
+    <div style="margin-bottom: 10px;">
+        <button id="btn-save" class="btn btn-sm btn-success"><i class="glyphicon glyphicon-floppy-disk"></i> Save (存檔)</button>
+        <button id="btn-close" class="btn btn-sm btn-danger"><i class="glyphicon glyphicon-lock"></i> Close (結案)</button>
+        <button id="btn-cancel" class="btn btn-sm btn-default"><i class="glyphicon glyphicon-refresh"></i> Cancel (取消)</button>
+    </div>
+
+    <table id="result-table"></table>
+    <div id="result-table-pager"></div>
+</div>
