@@ -1,0 +1,6 @@
+Jenkins 發布問題 Jenkins server與deploy server都是windows系統
+SSH: Connecting from host [MXMIFBE]
+SSH: Connecting with configuration [FABTMSWD1] ...
+ERROR: Exception when publishing, exception message [Failed to connect and initialize SSH connection. Message: [Failed to connect session for config [FABTMSWD1]. Message [Auth fail for methods 'publickey,password,keyboard-interactive']]]
+Build step 'Send files or execute commands over SSH' changed build result to UNSTABLE
+Finished: UNSTABLE
